@@ -16,28 +16,38 @@ const VIDEO_MP4 = "/media/hero.mp4";
 const VIDEO_WEBM = "/media/hero.webm";
 ---
 
-<section class="relative overflow-hidden">
-  <div
-    class="absolute inset-0 -z-10 bg-cover bg-center"
-    style={`background-image: linear-gradient(180deg, rgba(8,12,20,.55), rgba(8,12,20,.92)), url('${POSTER}'), radial-gradient(60rem 40rem at 30% 0%, rgba(34,211,238,.12), transparent);`}
-    aria-hidden="true"
-  >
+<section class="relative isolate overflow-hidden">
+  <!-- Fond : poster (immédiat) puis vidéo différée. Jamais dans le LCP. -->
+  <div class="absolute inset-0 z-0" aria-hidden="true">
+    <img
+      src={POSTER}
+      alt=""
+      class="h-full w-full object-cover"
+      fetchpriority="low"
+      decoding="async"
+    />
     <video
       id="hero-video"
-      class="h-full w-full object-cover opacity-0 transition-opacity duration-700"
+      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
       muted
       loop
       playsinline
       preload="none"
       poster={POSTER}
-      aria-hidden="true"
       tabindex="-1"
       data-mp4={VIDEO_MP4}
       data-webm={VIDEO_WEBM}
     ></video>
+    <!-- Scrim : léger en haut, dense en bas pour protéger le contraste du texte (WCAG AA). -->
+    <div
+      class="absolute inset-0"
+      style="background:
+        linear-gradient(180deg, rgba(8,12,20,.30) 0%, rgba(8,12,20,.55) 45%, rgba(8,12,20,.92) 100%),
+        radial-gradient(70rem 45rem at 25% 0%, rgba(34,211,238,.10), transparent 70%);"
+    ></div>
   </div>
 
-  <div class="container-page relative flex min-h-[78vh] flex-col justify-center py-24">
+  <div class="container-page relative z-10 flex min-h-[86svh] flex-col justify-center py-16 sm:py-24">
     <p class="eyebrow">{eyebrow}</p>
     <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
     <p class="mt-6 max-w-2xl text-lg text-[var(--color-ink-muted)]">{subtitle}</p>
@@ -49,16 +59,16 @@ const VIDEO_WEBM = "/media/hero.webm";
       </a>
     </div>
 
-    <dl class="mt-12 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-4 text-sm sm:grid-cols-3">
-      <div>
+    <dl class="mt-12 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 text-sm min-[420px]:grid-cols-3">
+      <div class="min-w-0">
         <dt class="text-[var(--color-ink-faint)]">Mise en ligne technique</dt>
         <dd class="text-[var(--color-ink)]">24h à 48h<span class="text-[var(--color-ink-faint)]">*</span></dd>
       </div>
-      <div>
+      <div class="min-w-0">
         <dt class="text-[var(--color-ink-faint)]">Performance mobile visée</dt>
         <dd class="text-[var(--color-ink)]">Lighthouse ≥ 90</dd>
       </div>
-      <div>
+      <div class="min-w-0">
         <dt class="text-[var(--color-ink-faint)]">Réponse WhatsApp</dt>
         <dd class="text-[var(--color-ink)]">&lt; 2h ouvrées</dd>
       </div>

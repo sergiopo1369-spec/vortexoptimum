@@ -6,12 +6,17 @@ const isActive = (href: string) =>
 ---
 
 <header class="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[color-mix(in_oklab,var(--color-bg)_82%,transparent)] backdrop-blur-xl">
-  <div class="container-page flex h-16 items-center justify-between gap-4">
-    <a href="/" class="flex items-center gap-2 font-semibold tracking-tight" aria-label={`${SITE.name} — accueil`}>
+  <div class="container-page flex h-16 items-center justify-between gap-3">
+    <a
+      href="/"
+      class="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
+      aria-label={`${SITE.name} — accueil`}
+    >
       <span class="inline-block h-6 w-6 rounded-md bg-gradient-to-br from-[var(--color-cyan)] via-[var(--color-amethyst)] to-[var(--color-emerald)]"></span>
       <span>{SITE.name}</span>
     </a>
 
+    <!-- Navigation bureau -->
     <nav aria-label="Navigation principale" class="hidden items-center gap-1 md:flex">
       {
         NAV.map((item) => (
@@ -31,40 +36,46 @@ const isActive = (href: string) =>
       }
     </nav>
 
-    <div class="flex items-center gap-2">
-      <a
-        class="btn btn-ghost hidden text-sm sm:inline-flex"
-        href={CONTACT.calcom.url}
-        rel="noopener"
-      >
-        Appel découverte
-      </a>
-      <a
-        class="btn btn-primary text-sm"
-        href={`https://wa.me/${CONTACT.whatsapp.waMe}`}
-        rel="noopener"
-      >
-        WhatsApp
-      </a>
-      <details class="relative md:hidden">
-        <summary class="btn btn-ghost list-none text-sm" aria-label="Ouvrir le menu">Menu</summary>
-        <nav
-          aria-label="Navigation mobile"
-          class="glass absolute right-0 mt-2 flex w-52 flex-col gap-1 p-2"
-        >
-          {
-            NAV.map((item) => (
-              <a
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                class="rounded-lg px-3 py-2 text-sm text-[var(--color-ink-muted)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-ink)]"
-              >
-                {item.label}
-              </a>
-            ))
-          }
-        </nav>
-      </details>
+    <!-- Actions bureau -->
+    <div class="hidden items-center gap-2 md:flex">
+      <a class="btn btn-ghost text-sm" href={CONTACT.calcom.url} rel="noopener">Appel découverte</a>
+      <a class="btn btn-primary text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener">WhatsApp</a>
     </div>
+
+    <!-- Menu mobile -->
+    <details class="relative md:hidden">
+      <summary
+        class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
+        aria-label="Ouvrir le menu"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
+        </svg>
+      </summary>
+      <nav
+        aria-label="Navigation mobile"
+        class="glass glass-strong absolute right-0 z-50 mt-2 flex w-60 flex-col gap-1 p-2"
+      >
+        {
+          NAV.map((item) => (
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              class:list={[
+                "rounded-lg px-3 py-2 text-sm",
+                isActive(item.href)
+                  ? "text-[var(--color-cyan-text)]"
+                  : "text-[var(--color-ink-muted)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-ink)]",
+              ]}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+        <div class="my-1 h-px bg-[var(--color-border)]"></div>
+        <a class="btn btn-ghost text-sm" href={CONTACT.calcom.url} rel="noopener">Appel découverte (15 min)</a>
+        <a class="btn btn-primary text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener">WhatsApp</a>
+      </nav>
+    </details>
   </div>
 </header>

@@ -43,6 +43,9 @@
   html {
     scroll-behavior: smooth;
     background-color: var(--color-bg);
+    /* Filet de sécurité : aucun débordement horizontal ne doit provoquer de scroll
+       latéral (clip ne casse pas position: sticky, contrairement à hidden). */
+    overflow-x: clip;
   }
 
   body {

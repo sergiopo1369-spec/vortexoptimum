@@ -1,0 +1,51 @@
+---
+import { SITE, CONTACT } from "../config/site";
+
+const channels = [
+  {
+    label: CONTACT.whatsapp.label,
+    value: CONTACT.whatsapp.display,
+    href: `https://wa.me/${CONTACT.whatsapp.waMe}`,
+    sla: CONTACT.whatsapp.sla,
+    note: "Demandes courantes, suivi de projet",
+  },
+  {
+    label: CONTACT.sms.label,
+    value: CONTACT.sms.display,
+    href: `sms:${CONTACT.sms.e164}`,
+    sla: CONTACT.sms.sla,
+    note: "Urgences, indisponibilité ponctuelle d'un canal",
+  },
+  {
+    label: CONTACT.calcom.label,
+    value: "cal.com",
+    href: CONTACT.calcom.url,
+    sla: CONTACT.calcom.sla,
+    note: "Appel découverte de 15 min sans friction",
+  },
+  {
+    label: CONTACT.email.label,
+    value: SITE.email,
+    href: `mailto:${SITE.email}`,
+    sla: CONTACT.email.sla,
+    note: "Demandes contractuelles, factures",
+  },
+];
+---
+
+<div class="grid gap-4 sm:grid-cols-2">
+  {
+    channels.map((c) => (
+      <a href={c.href} rel="noopener" class="glass flex flex-col gap-1 p-5 transition-colors hover:glass-strong">
+        <span class="text-sm text-[var(--color-ink-faint)]">{c.label}</span>
+        <span class="text-lg font-semibold">{c.value}</span>
+        <span class="text-sm text-[var(--color-ink-muted)]">{c.note}</span>
+        <span class="mt-2 text-xs text-[var(--color-cyan-text)]">{c.sla}</span>
+      </a>
+    ))
+  }
+</div>
+<p class="mt-4 text-xs text-[var(--color-ink-faint)]">
+  Horaires : {CONTACT.hours}. En dehors de ces horaires, réponse au prochain jour ouvré —
+  sauf option Assistant IA 24/7, qui assure l'accueil et la qualification hors horaires humains.
+</p>

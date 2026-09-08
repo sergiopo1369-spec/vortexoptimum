@@ -1,0 +1,179 @@
+---
+import { PACKS, ADDONS } from "../config/pricing";
+import { euros } from "../lib/quote";
+import { CONTACT } from "../config/site";
+---
+
+<form id="quote" class="glass glass-glow grid gap-8 p-6 md:p-8" novalidate>
+  <div>
+    <h2 class="text-2xl font-semibold">Calculateur de devis</h2>
+    <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+      Cochez vos besoins : le total se recalcule instantanément. Le récapitulatif part
+      ensuite sur WhatsApp ou par e-mail en un clic. Aucune donnée n'est enregistrée à cette étape.
+    </p>
+  </div>
+
+  <fieldset class="grid gap-3">
+    <legend class="mb-1 text-sm font-semibold text-[var(--color-ink-faint)]">1. Pack de base</legend>
+    {
+      PACKS.map((p, i) => (
+        <label class="glass opt opt-glow flex cursor-pointer items-start gap-3 p-4">
+          <input
+            class="mt-1 accent-[var(--color-cyan)]"
+            type="radio"
+            name="pack"
+            value={p.id}
+            checked={i === 0}
+          />
+          <span class="grid gap-1">
+            <span class="font-semibold">{p.label}</span>
+            <span class="text-sm text-[var(--color-ink-muted)]">{p.description}</span>
+            <span class="text-sm text-[var(--color-cyan-text)]">
+              {euros(p.setup)} installation + {euros(p.monthly)}/mois
+            </span>
+          </span>
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <fieldset class="grid gap-3">
+    <legend class="mb-1 text-sm font-semibold text-[var(--color-ink-faint)]">2. Options</legend>
+    {
+      ADDONS.map((a) => (
+        <label class="glass opt flex cursor-pointer items-start gap-3 p-4">
+          <input class="mt-1 accent-[var(--color-cyan)]" type="checkbox" name="addon" value={a.id} />
+          <span class="grid gap-1">
+            <span class="font-semibold">{a.label}</span>
+            <span class="text-sm text-[var(--color-ink-muted)]">{a.description}</span>
+            <span class="text-sm text-[var(--color-cyan-text)]">
+              {a.quoteOnly
+                ? "Sur devis"
+                : `+ ${euros(a.setup)} ${a.monthly ? `+ ${euros(a.monthly)}/mois` : "(sans mensualité)"}`}
+            </span>
+          </span>
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <div class="grid gap-2">
+    <label for="quote-name" class="text-sm font-semibold text-[var(--color-ink-faint)]">
+      3. Votre nom / enseigne
+    </label>
+    <input
+      id="quote-name"
+      name="name"
+      type="text"
+      autocomplete="organization"
+      placeholder="Ex. Garage Central — Reims"
+      class="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-soft)] px-4 py-3 text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)]"
+    />
+  </div>
+
+  <div class="glass-strong grid gap-4 rounded-xl p-5">
+    <div class="flex items-end justify-between gap-4">
+      <div>
+        <p class="text-sm text-[var(--color-ink-faint)]">Installation</p>
+        <p id="total-setup" class="text-3xl font-semibold" aria-live="polite">{euros(PACKS[0].setup)}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-[var(--color-ink-faint)]">Puis chaque mois</p>
+        <p id="total-monthly" class="text-3xl font-semibold" aria-live="polite">
+          {euros(PACKS[0].monthly)}<span class="text-base text-[var(--color-ink-faint)]">/mois</span>
+        </p>
+      </div>
+    </div>
+
+    <ul id="recap-lines" class="grid gap-1 border-t border-[var(--color-border)] pt-3 text-sm text-[var(--color-ink-muted)]"></ul>
+    <p id="quote-note" class="text-xs text-[var(--color-ink-faint)]" hidden>
+      Une prestation « sur devis » est sélectionnée : le montant final vous est confirmé par écrit.
+    </p>
+    <p id="quote-invalid" class="text-xs text-[var(--color-amethyst-text)]" hidden>
+      Sélectionnez un pack de base pour obtenir un devis complet.
+    </p>
+  </div>
+
+  <div class="flex flex-wrap gap-3">
+    <a id="send-whatsapp" class="btn btn-primary" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener">
+      Envoyer sur WhatsApp
+    </a>
+    <a id="send-email" class="btn btn-ghost" href="#">Envoyer par e-mail</a>
+  </div>
+
+  <p class="text-xs text-[var(--color-ink-faint)]">
+    Tarifs indiquant le statut fiscal (HT/TTC) précisé sur le devis. Sans engagement de durée
+    sur l'abonnement, résiliable avec préavis de 30 jours. Le montant d'installation n'est pas
+    remboursable une fois le développement engagé.
+  </p>
+</form>
+
+<script>
+  import { computeQuote, buildRecap, euros, type QuoteSelection } from "../lib/quote";
+  import { CONTACT, SITE } from "../config/site";
+
+  const form = document.getElementById("quote") as HTMLFormElement | null;
+  if (form) {
+    const setupEl = document.getElementById("total-setup")!;
+    const monthlyEl = document.getElementById("total-monthly")!;
+    const recapEl = document.getElementById("recap-lines")!;
+    const noteEl = document.getElementById("quote-note") as HTMLElement;
+    const invalidEl = document.getElementById("quote-invalid") as HTMLElement;
+    const waEl = document.getElementById("send-whatsapp") as HTMLAnchorElement;
+    const emailEl = document.getElementById("send-email") as HTMLAnchorElement;
+
+    // Pré-sélection via ?pack=starter|pro
+    const params = new URLSearchParams(location.search);
+    const wantedPack = params.get("pack");
+    if (wantedPack) {
+      const r = form.querySelector<HTMLInputElement>(`input[name="pack"][value="${wantedPack}"]`);
+      if (r) r.checked = true;
+    }
+    for (const a of params.getAll("addon")) {
+      const c = form.querySelector<HTMLInputElement>(`input[name="addon"][value="${a}"]`);
+      if (c) c.checked = true;
+    }
+
+    function readSelection(): QuoteSelection {
+      const pack =
+        form!.querySelector<HTMLInputElement>('input[name="pack"]:checked')?.value ?? null;
+      const addons = [...form!.querySelectorAll<HTMLInputElement>('input[name="addon"]:checked')].map(
+        (i) => i.value,
+      );
+      return { pack, addons };
+    }
+
+    function render() {
+      const selection = readSelection();
+      const q = computeQuote(selection);
+
+      setupEl.textContent = q.hasQuoteOnly
+        ? `${euros(q.setupTotal)} + sur devis`
+        : euros(q.setupTotal);
+      monthlyEl.innerHTML = `${euros(q.monthlyTotal)}<span class="text-base text-[var(--color-ink-faint)]">/mois</span>`;
+
+      recapEl.innerHTML = q.lines
+        .map(
+          (l) =>
+            `<li class="flex justify-between gap-4"><span>${l.label}</span><span class="shrink-0 text-[var(--color-ink)]">${
+              l.quoteOnly ? "sur devis" : `${euros(l.setup)} · ${euros(l.monthly)}/mois`
+            }</span></li>`,
+        )
+        .join("");
+
+      noteEl.hidden = !q.hasQuoteOnly;
+      invalidEl.hidden = q.valid;
+
+      const name = (form!.elements.namedItem("name") as HTMLInputElement)?.value ?? "";
+      const recap = buildRecap(selection, name);
+      waEl.href = `https://wa.me/${CONTACT.whatsapp.waMe}?text=${encodeURIComponent(recap)}`;
+      emailEl.href = `mailto:${SITE.email}?subject=${encodeURIComponent(
+        "Demande de devis — " + (name.trim() || "site Vortexoptim"),
+      )}&body=${encodeURIComponent(recap)}`;
+    }
+
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    render();
+  }
+</script>

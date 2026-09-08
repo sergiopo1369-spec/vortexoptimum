@@ -1,0 +1,16 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  as?: "h2" | "h3";
+}
+const { eyebrow, title, lead, as = "h2" } = Astro.props;
+const Tag = as;
+---
+
+<div class="mx-auto max-w-2xl text-center">
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <Tag class="mt-3 text-3xl font-semibold sm:text-4xl">{title}</Tag>
+  {lead && <p class="mt-4 text-[var(--color-ink-muted)]">{lead}</p>}
+</div>

@@ -1,0 +1,112 @@
+---
+import LegalLayout from "../layouts/LegalLayout.astro";
+import { SITE } from "../config/site";
+import { PACKS, ADDONS } from "../config/pricing";
+import { euros } from "../lib/quote";
+---
+
+<LegalLayout
+  title="Conditions générales de vente"
+  description="Conditions générales de vente des prestations Vortexoptim : packs, options, facturation, engagement, propriété et portabilité."
+  path="/cgv"
+  updated="8 septembre 2026"
+>
+  <p>
+    Les présentes conditions régissent les prestations de création et de maintenance de sites web
+    et de services associés fournies par <strong>{SITE.legalName}</strong> (« l'agence ») à ses
+    clients professionnels. Elles sont annexées à chaque devis ; la signature du devis vaut
+    acceptation sans réserve.
+  </p>
+
+  <h2>1. Offres et tarifs</h2>
+  <p>Tarifs en vigueur à la date du devis, exprimés en euros. Le statut fiscal (HT ou TTC) est précisé en en-tête du devis.</p>
+  <table>
+    <thead><tr><th>Prestation</th><th>Installation</th><th>Mensuel</th></tr></thead>
+    <tbody>
+      {PACKS.map((p) => (<tr><td>{p.label}</td><td>{euros(p.setup)}</td><td>{euros(p.monthly)}/mois</td></tr>))}
+      {ADDONS.map((a) => (
+        <tr>
+          <td>{a.label}</td>
+          <td>{a.quoteOnly ? "sur devis" : `+ ${euros(a.setup)}`}</td>
+          <td>{a.quoteOnly ? "—" : a.monthly ? `+ ${euros(a.monthly)}/mois` : "0 €"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>2. Délai de mise en ligne</h2>
+  <p>
+    La mise en ligne technique (hébergement, DNS, SSL, structure du site, formulaires
+    fonctionnels) intervient sous 24h à 48h à compter de la <strong>réception complète et validée</strong>
+    des éléments à fournir par le client : textes définitifs ou brief, logo et charte (ou accord de
+    création par l'agence), accès ou création du nom de domaine, photos (sauf prise de vue sur site
+    prévue au pack). En l'absence d'un élément, le délai démarre à réception du dernier élément
+    manquant. Ce point est confirmé par e-mail à la commande.
+  </p>
+
+  <h2>3. Facturation et paiement</h2>
+  <ul>
+    <li>Installation payable à la commande ; pour les packs supérieurs à 250 €, échéancier 50 % à la signature et 50 % à la mise en ligne.</li>
+    <li>Abonnement mensuel prélevé à date anniversaire.</li>
+    <li>Tout retard de paiement peut entraîner la suspension du service après mise en demeure restée sans effet.</li>
+  </ul>
+
+  <h2>4. Durée et résiliation</h2>
+  <p>
+    L'abonnement est sans engagement de durée minimale, résiliable par l'une ou l'autre partie
+    avec un préavis de 30 jours. Le montant d'installation n'est pas remboursable une fois le
+    développement engagé.
+  </p>
+
+  <h2>5. Déplacements</h2>
+  <p>
+    Déplacement offert jusqu'à {SITE.serviceRadiusKm} km autour de Reims. Au-delà : frais au barème
+    kilométrique fiscal en vigueur et temps de trajet facturé à la demi-heure, chiffrés au devis.
+  </p>
+
+  <h2>6. Propriété intellectuelle</h2>
+  <p>
+    Le nom de domaine est déposé au nom du client. Le code source et les contenus créés par
+    l'agence restent sa propriété jusqu'au solde complet des factures, puis sont cédés au client.
+  </p>
+
+  <h2>7. Portabilité</h2>
+  <p>
+    En cas de résiliation, l'agence fournit au client l'export des données du mini-CRM et du contenu
+    du site sous 15 jours ouvrés.
+  </p>
+
+  <h2>8. Périmètre et avenants</h2>
+  <p>
+    Toute demande hors du périmètre du pack souscrit fait l'objet d'un avenant chiffré et accepté
+    par écrit avant exécution.
+  </p>
+
+  <h2>9. Révision tarifaire</h2>
+  <p>Toute hausse de l'abonnement mensuel est notifiée avec un préavis de 60 jours.</p>
+
+  <h2>10. Assistant IA</h2>
+  <p>
+    Lorsque l'option est souscrite, l'agent conversationnel ne prend aucun engagement financier
+    ferme au nom du client et redirige vers un interlocuteur humain toute demande hors périmètre
+    (litige, réclamation, urgence).
+  </p>
+
+  <h2>11. Responsabilité</h2>
+  <p>
+    L'agence est tenue à une obligation de moyens. Sa responsabilité ne saurait être engagée en cas
+    d'indisponibilité d'un service tiers (API de réservation, passerelle de paiement) hors de son
+    contrôle, ni en cas de fourniture tardive des contenus par le client.
+  </p>
+
+  <h2>12. Droit applicable</h2>
+  <p>
+    Les présentes conditions sont soumises au droit français. À défaut de résolution amiable, le
+    litige relève des tribunaux compétents du ressort du siège de l'agence.
+  </p>
+
+  <p class="todo">
+    ⚠️ Document de référence commercial. Faire valider par un conseil juridique et compléter
+    l'identité de l'agence avant diffusion contractuelle.
+  </p>
+</LegalLayout>

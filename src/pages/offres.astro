@@ -1,0 +1,117 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import PackCard from "../components/PackCard.astro";
+import { PACKS, ADDONS } from "../config/pricing";
+import { euros } from "../lib/quote";
+
+const cgv = [
+  ["Facturation", "Installation à la commande (ou 50/50 à la signature et à la mise en ligne pour les packs > 250 €). Abonnement prélevé à date anniversaire."],
+  ["Engagement", "Sans engagement sur l'abonnement, résiliable avec 30 jours de préavis. L'installation n'est pas remboursable une fois le développement engagé."],
+  ["Propriété", "Le nom de domaine est déposé au nom du client. Le code et les contenus créés par l'agence lui sont cédés au solde complet des factures."],
+  ["Portabilité", "En cas de résiliation : export des données du mini-CRM et du contenu du site sous 15 jours ouvrés."],
+  ["Révision tarifaire", "Toute hausse d'abonnement est notifiée avec 60 jours de préavis."],
+];
+---
+
+<BaseLayout
+  title="Offres & tarifs"
+  description="Packs clé en main, options à la carte et conditions commerciales de Vortexoptim — agence digitale de proximité à Reims."
+  path="/offres"
+>
+  <section class="container-page py-16">
+    <SectionHeading
+      eyebrow="Offres & tarifs"
+      title="Des offres lisibles, un devis transparent"
+      lead="Tarifs indiquant le statut fiscal (HT/TTC) précisé sur chaque devis. Toute prestation hors périmètre d'un pack fait l'objet d'un avenant chiffré avant exécution."
+    />
+
+    <div class="mt-12 grid gap-6 lg:grid-cols-2">
+      {PACKS.map((p) => <PackCard pack={p} featured={p.id === "pro"} />)}
+    </div>
+  </section>
+
+  <!-- Détails packs -->
+  <section class="container-page py-12">
+    {
+      PACKS.map((p) => (
+        <div class="glass mb-6 p-6">
+          <h2 class="text-xl font-semibold">{p.label}</h2>
+          <p class="mt-1 text-sm text-[var(--color-cyan-text)]">
+            {euros(p.setup)} installation + {euros(p.monthly)}/mois
+          </p>
+          <div class="mt-4 grid gap-6 md:grid-cols-3">
+            <div>
+              <h3 class="text-sm font-semibold text-[var(--color-ink-faint)]">Inclus</h3>
+              <ul class="mt-2 space-y-1 text-sm text-[var(--color-ink-muted)]">
+                {p.includes.map((x) => <li>• {x}</li>)}
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-[var(--color-ink-faint)]">Offert</h3>
+              <ul class="mt-2 space-y-1 text-sm text-[var(--color-ink-muted)]">
+                {p.freebies.map((x) => <li>🎁 {x}</li>)}
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-[var(--color-ink-faint)]">En option (upsell)</h3>
+              <ul class="mt-2 space-y-1 text-sm text-[var(--color-ink-muted)]">
+                {p.exclusions.map((x) => <li>+ {x}</li>)}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </section>
+
+  <!-- Options à la carte -->
+  <section class="container-page py-12">
+    <SectionHeading eyebrow="À la carte" title="Options modulaires" lead="Cumulables avec n'importe quel pack. Configurables directement dans le calculateur de devis." />
+    <div class="mt-10 overflow-x-auto">
+      <table class="w-full min-w-[40rem] border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-[var(--color-border)] text-left text-[var(--color-ink-faint)]">
+            <th class="py-3 pr-4 font-semibold">Option</th>
+            <th class="py-3 pr-4 font-semibold">Coût initial</th>
+            <th class="py-3 pr-4 font-semibold">Coût mensuel</th>
+            <th class="py-3 font-semibold">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            ADDONS.map((a) => (
+              <tr class="border-b border-[var(--color-border)] align-top">
+                <td class="py-3 pr-4 font-semibold">{a.label}</td>
+                <td class="py-3 pr-4 text-[var(--color-cyan-text)]">{a.quoteOnly ? "sur devis" : `+ ${euros(a.setup)}`}</td>
+                <td class="py-3 pr-4 text-[var(--color-cyan-text)]">{a.quoteOnly ? "—" : a.monthly ? `+ ${euros(a.monthly)}/mois` : "0 €"}</td>
+                <td class="py-3 text-[var(--color-ink-muted)]">{a.description}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-8 text-center">
+      <a class="btn btn-primary" href="/devis">Configurer mon devis</a>
+    </div>
+  </section>
+
+  <!-- CGV résumé -->
+  <section class="container-page py-12">
+    <SectionHeading eyebrow="Conditions" title="Conditions commerciales générales" lead="Résumé — les CGV complètes sont remises et signées avec le devis." />
+    <dl class="mx-auto mt-10 max-w-3xl divide-y divide-[var(--color-border)]">
+      {
+        cgv.map(([term, def]) => (
+          <div class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+            <dt class="font-semibold">{term}</dt>
+            <dd class="text-sm text-[var(--color-ink-muted)]">{def}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="mx-auto mt-6 max-w-3xl text-center text-sm">
+      <a class="link-underline" href="/cgv">Lire les CGV</a>
+    </p>
+  </section>
+</BaseLayout>

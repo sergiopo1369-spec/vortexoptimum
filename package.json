@@ -1,0 +1,38 @@
+{
+  "name": "vortexoptim-site",
+  "type": "module",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Site vitrine Vortexoptim — Agence digitale & ingénierie IA de proximité (Reims & Grand Est)",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "verify": "astro check && vitest run",
+    "preview": "astro preview",
+    "astro": "astro",
+    "media": "node scripts/prepare-media.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/sitemap": "^3.4.0",
+    "astro": "^5.13.0",
+    "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "ffmpeg-static": "^5.2.0",
+    "tailwindcss": "^4.1.0",
+    "vitest": "^2.1.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.27.7": true,
+    "esbuild@0.21.5": true,
+    "ffmpeg-static@5.3.0": true,
+    "sharp@0.34.5": true
+  }
+}

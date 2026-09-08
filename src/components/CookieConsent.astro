@@ -1,0 +1,86 @@
+---
+/*
+  Bandeau de consentement cookies — opt-in EXPLICITE (§7.1).
+  Aucun cookie / pixel non essentiel ne doit être déposé avant un consentement
+  positif. Ce composant ne pose lui-même AUCUN cookie : il stocke le choix en
+  localStorage et expose l'état via window.__consent + l'événement
+  `consent:change`. Les intégrations (Google Ads / Meta Ads — §4.B / §9) devront
+  s'abonner à cet événement avant de charger quoi que ce soit.
+*/
+---
+
+<div
+  id="cookie-consent"
+  hidden
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="cookie-consent-title"
+  class="fixed inset-x-0 bottom-0 z-50 p-4"
+>
+  <div class="glass glass-strong container-page flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+    <div class="max-w-2xl text-sm">
+      <p id="cookie-consent-title" class="font-semibold">Votre vie privée</p>
+      <p class="mt-1 text-[var(--color-ink-muted)]">
+        Ce site n'utilise que des cookies strictement nécessaires à son fonctionnement.
+        Les mesures d'audience et les pixels publicitaires (Google Ads, Meta Ads) ne
+        sont activés qu'avec votre accord. Voir la
+        <a class="link-underline" href="/politique-de-confidentialite">politique de confidentialité</a>.
+      </p>
+    </div>
+    <div class="flex shrink-0 gap-2">
+      <button type="button" class="btn btn-ghost text-sm" data-consent="refuse">Refuser</button>
+      <button type="button" class="btn btn-primary text-sm" data-consent="accept">Tout accepter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = "vx_consent_v1";
+  const el = document.getElementById("cookie-consent");
+
+  type Consent = { analytics: boolean; ads: boolean; ts: string };
+
+  function read(): Consent | null {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? (JSON.parse(raw) as Consent) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function apply(c: Consent | null) {
+    (window as any).__consent = c ?? { analytics: false, ads: false };
+    window.dispatchEvent(new CustomEvent("consent:change", { detail: (window as any).__consent }));
+  }
+
+  function save(value: boolean) {
+    const c: Consent = { analytics: value, ads: value, ts: new Date().toISOString() };
+    try {
+      localStorage.setItem(KEY, JSON.stringify(c));
+    } catch {
+      /* stockage indisponible : on applique pour la session uniquement */
+    }
+    apply(c);
+    if (el) el.hidden = true;
+  }
+
+  function open() {
+    if (el) el.hidden = false;
+  }
+
+  const existing = read();
+  apply(existing);
+  if (!existing) open();
+
+  el?.querySelectorAll<HTMLButtonElement>("[data-consent]").forEach((btn) => {
+    btn.addEventListener("click", () => save(btn.dataset.consent === "accept"));
+  });
+
+  document.querySelectorAll<HTMLElement>("[data-open-cookie-settings]").forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      open();
+    });
+  });
+</script>

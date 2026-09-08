@@ -1,0 +1,76 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCover from "../../components/PostCover.astro";
+import { SITE } from "../../config/site";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const df = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
+const url = new URL(`/blog/${post.id}`, SITE.url).toString();
+
+// JSON-LD BlogPosting (§10 — préparation SEO / moteurs génératifs)
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  inLanguage: "fr-FR",
+  mainEntityOfPage: url,
+  author: { "@type": "Organization", name: SITE.name, url: SITE.url },
+  publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+  keywords: post.data.tags.join(", "),
+};
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} path={`/blog/${post.id}`} jsonLd={jsonLd}>
+  <article class="container-page py-16">
+    <div class="mx-auto max-w-2xl">
+      <a href="/blog" class="text-sm text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]">← Tous les articles</a>
+      <h1 class="mt-4 text-3xl font-semibold sm:text-4xl">{post.data.title}</h1>
+      <p class="mt-3 text-sm text-[var(--color-ink-faint)]">
+        <time datetime={post.data.pubDate.toISOString()}>{df.format(post.data.pubDate)}</time>
+        {post.data.tags.length > 0 && <span> · {post.data.tags.join(" · ")}</span>}
+      </p>
+    </div>
+
+    <div class="mx-auto mt-8 max-w-3xl">
+      <PostCover cover={post.data.cover} concept={post.data.imageConcept} />
+    </div>
+
+    <div class="prose-vx mx-auto mt-10 max-w-2xl">
+      <Content />
+    </div>
+
+    <div class="mx-auto mt-12 max-w-2xl glass glass-glow p-6">
+      <p class="font-semibold">Un projet local à Reims ?</p>
+      <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+        Estimez votre écosystème digital en une minute, ou réservez un appel découverte de 15 minutes.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a class="btn btn-primary" href="/devis">Estimer mon projet</a>
+        <a class="btn btn-ghost" href="/offres">Voir les offres</a>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style is:global>
+  .prose-vx { color: var(--color-ink); line-height: 1.7; }
+  .prose-vx h2 { font-size: 1.4rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+  .prose-vx h3 { font-size: 1.15rem; font-weight: 600; margin: 1.6rem 0 0.5rem; }
+  .prose-vx p { margin: 0.9rem 0; color: var(--color-ink-muted); }
+  .prose-vx ul, .prose-vx ol { margin: 0.9rem 0; padding-left: 1.25rem; color: var(--color-ink-muted); }
+  .prose-vx li { margin: 0.4rem 0; }
+  .prose-vx li::marker { color: var(--color-cyan); }
+  .prose-vx strong { color: var(--color-ink); }
+  .prose-vx a { text-decoration: underline; text-underline-offset: 3px; }
+</style>

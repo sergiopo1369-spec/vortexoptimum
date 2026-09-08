@@ -1,0 +1,225 @@
+@import "tailwindcss";
+
+/*
+  Design system — « Dark Luxury Glassmorphism » (§5.3)
+  - Fond sombre profond #080C14
+  - Cartes translucides dépolies (backdrop-blur)
+  - Bordures fines à micro-dégradés lumineux
+  - Accents cyan / émeraude / améthyste
+  - Contrastes : tout texte courant vise WCAG AA >= 4.5:1 sur le fond,
+    texte large >= 3:1. Les teintes "base" (-400/-500) sont réservées
+    aux éléments décoratifs (bordures, icônes, halos), pas au texte courant.
+*/
+
+@theme {
+  --color-bg: #080c14;
+  --color-bg-soft: #0c111c;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-strong: rgba(255, 255, 255, 0.07);
+  --color-border: rgba(255, 255, 255, 0.1);
+
+  --color-ink: #f4f7fb; /* ~17:1 sur --color-bg */
+  --color-ink-muted: #aab7c9; /* ~8.5:1 sur --color-bg */
+  --color-ink-faint: #7d8aa0; /* ~4.7:1 — limite basse, réservé aux légendes */
+
+  --color-cyan: #22d3ee;
+  --color-cyan-text: #7ce7f5; /* AA sur fond sombre pour du texte d'accent */
+  --color-emerald: #34d399;
+  --color-emerald-text: #6ee7b7;
+  --color-amethyst: #a78bfa;
+  --color-amethyst-text: #c4b5fd;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  --radius-card: 1rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--color-bg);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    line-height: 1.15;
+  }
+
+  p { text-wrap: pretty; }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect de prefers-reduced-motion (§5.1 dégradation gracieuse, accessibilité) */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  /* Carte verre dépoli + bordure à micro-dégradé lumineux */
+  .glass {
+    position: relative;
+    background: var(--color-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+  }
+
+  .glass-strong {
+    background: var(--color-surface-strong);
+  }
+
+  /* Liseré dégradé au survol / mise en avant */
+  .glass-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-cyan) 70%, transparent),
+      color-mix(in oklab, var(--color-amethyst) 60%, transparent),
+      color-mix(in oklab, var(--color-emerald) 60%, transparent)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    will-change: transform;
+  }
+
+  .btn-primary {
+    /* Texte foncé sur dégradé clair -> contraste AA large garanti */
+    color: #04121a;
+    background: linear-gradient(120deg, var(--color-cyan), var(--color-emerald));
+    box-shadow: 0 8px 30px -12px color-mix(in oklab, var(--color-cyan) 60%, transparent);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+
+  .btn-ghost {
+    color: var(--color-ink);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .btn-ghost:hover { background: var(--color-surface-strong); }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-cyan-text);
+  }
+
+  .link-underline {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-border);
+  }
+  .link-underline:hover { text-decoration-color: var(--color-cyan); }
+
+  .skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    z-index: 100;
+    background: var(--color-bg-soft);
+    color: var(--color-ink);
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 0.5rem 0;
+  }
+  .skip-link:focus { left: 0; }
+
+  /*
+    Option sélectionnable (radio / checkbox du calculateur de devis).
+    Le style "coché" est géré ici en CSS via :has() — les variantes
+    has-[:checked]: de Tailwind ne s'appliquent pas aux classes de composant.
+  */
+  .opt { transition: background-color 0.15s ease, border-color 0.15s ease; }
+  .opt:has(input:checked) {
+    background: var(--color-surface-strong);
+    border-color: color-mix(in oklab, var(--color-cyan) 45%, var(--color-border));
+  }
+  .opt:has(input:focus-visible) {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+  .opt-glow:has(input:checked)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-cyan) 70%, transparent),
+      color-mix(in oklab, var(--color-amethyst) 60%, transparent)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* Halo d'ambiance discret, sans coût de rendu vidéo */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 60rem at 12% -10%, color-mix(in oklab, var(--color-cyan) 12%, transparent), transparent 60%),
+    radial-gradient(50rem 50rem at 100% 0%, color-mix(in oklab, var(--color-amethyst) 10%, transparent), transparent 55%),
+    radial-gradient(40rem 40rem at 50% 120%, color-mix(in oklab, var(--color-emerald) 8%, transparent), transparent 60%);
+}

@@ -1,0 +1,25 @@
+# deps
+node_modules/
+
+# build
+dist/
+.astro/
+
+# env
+.env
+.env.production
+.env.local
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# assets sources — on ne versionne QUE la source du hero (reproductibilité de `npm run media`)
+assets-src/originals/
+assets-src/*.mp4
+assets-src/**/*.mp4
+!assets-src/hero-source.mp4
+
+# Le média généré (public/media/*) EST versionné à dessein :
+# le déploiement n'a pas besoin de ffmpeg. Voir scripts/prepare-media.mjs

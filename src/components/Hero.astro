@@ -1,0 +1,111 @@
+---
+import { CONTACT } from "../config/site";
+
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle: string;
+}
+const { eyebrow = "Reims & Grand Est", title, subtitle } = Astro.props;
+
+// Média généré par `npm run media` (voir scripts/prepare-media.mjs).
+// Le poster s'affiche immédiatement ; la vidéo est chargée APRÈS le load
+// et ne participe jamais au LCP (§6.2).
+const POSTER = "/media/hero-poster.jpg";
+const VIDEO_MP4 = "/media/hero.mp4";
+const VIDEO_WEBM = "/media/hero.webm";
+---
+
+<section class="relative overflow-hidden">
+  <div
+    class="absolute inset-0 -z-10 bg-cover bg-center"
+    style={`background-image: linear-gradient(180deg, rgba(8,12,20,.55), rgba(8,12,20,.92)), url('${POSTER}'), radial-gradient(60rem 40rem at 30% 0%, rgba(34,211,238,.12), transparent);`}
+    aria-hidden="true"
+  >
+    <video
+      id="hero-video"
+      class="h-full w-full object-cover opacity-0 transition-opacity duration-700"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster={POSTER}
+      aria-hidden="true"
+      tabindex="-1"
+      data-mp4={VIDEO_MP4}
+      data-webm={VIDEO_WEBM}
+    ></video>
+  </div>
+
+  <div class="container-page relative flex min-h-[78vh] flex-col justify-center py-24">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
+    <p class="mt-6 max-w-2xl text-lg text-[var(--color-ink-muted)]">{subtitle}</p>
+
+    <div class="mt-9 flex flex-wrap gap-3">
+      <a class="btn btn-primary" href="/devis">Estimer mon projet en 1 min</a>
+      <a class="btn btn-ghost" href={CONTACT.calcom.url} rel="noopener">
+        {CONTACT.calcom.label}
+      </a>
+    </div>
+
+    <dl class="mt-12 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-4 text-sm sm:grid-cols-3">
+      <div>
+        <dt class="text-[var(--color-ink-faint)]">Mise en ligne technique</dt>
+        <dd class="text-[var(--color-ink)]">24h à 48h<span class="text-[var(--color-ink-faint)]">*</span></dd>
+      </div>
+      <div>
+        <dt class="text-[var(--color-ink-faint)]">Performance mobile visée</dt>
+        <dd class="text-[var(--color-ink)]">Lighthouse ≥ 90</dd>
+      </div>
+      <div>
+        <dt class="text-[var(--color-ink-faint)]">Réponse WhatsApp</dt>
+        <dd class="text-[var(--color-ink)]">&lt; 2h ouvrées</dd>
+      </div>
+    </dl>
+    <p class="mt-4 max-w-2xl text-xs text-[var(--color-ink-faint)]">
+      * Délai de mise en ligne technique à compter de la réception complète et validée
+      de vos contenus (textes, logo, domaine, photos). En l'absence d'un élément, le
+      délai démarre à réception du dernier élément manquant.
+    </p>
+  </div>
+</section>
+
+<script>
+  const video = document.getElementById("hero-video") as HTMLVideoElement | null;
+  if (video) {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const conn = (navigator as any).connection;
+    const saveData = conn?.saveData === true;
+    const slow = conn && /2g/.test(conn.effectiveType ?? "");
+
+    if (!prefersReduced && !saveData && !slow) {
+      const load = () => {
+        const webm = video.dataset.webm;
+        const mp4 = video.dataset.mp4;
+        const add = (src: string, type: string) => {
+          const s = document.createElement("source");
+          s.src = src;
+          s.type = type;
+          video.appendChild(s);
+        };
+        if (webm) add(webm, "video/webm");
+        if (mp4) add(mp4, "video/mp4");
+        video.load();
+        video.play().then(
+          () => video.classList.replace("opacity-0", "opacity-100"),
+          () => {
+            /* lecture refusée : on garde le poster, dégradation gracieuse */
+          },
+        );
+      };
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void })
+        .requestIdleCallback;
+      if (typeof ric === "function") {
+        ric(load, { timeout: 3000 });
+      } else {
+        window.addEventListener("load", () => window.setTimeout(load, 800), { once: true });
+      }
+    }
+  }
+</script>

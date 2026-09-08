@@ -1,0 +1,130 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import PackCard from "../components/PackCard.astro";
+import QuoteCalculator from "../components/QuoteCalculator.astro";
+import ContactChannels from "../components/ContactChannels.astro";
+import { PACKS } from "../config/pricing";
+import { SITE } from "../config/site";
+
+const kpis = [
+  { label: "Performance mobile (Lighthouse)", value: "≥ 90" },
+  { label: "Accessibilité (Lighthouse)", value: "≥ 90" },
+  { label: "SEO technique (Lighthouse)", value: "≥ 95" },
+  { label: "Disponibilité hébergement", value: "≥ 99,9 %" },
+  { label: "LCP", value: "< 2,5 s" },
+  { label: "Réduction des no-shows visée", value: "-30 %" },
+];
+
+const steps = [
+  { t: "Signature + appel de cadrage", d: "15 min sur Cal.com, sous 48h. On liste les contenus nécessaires." },
+  { t: "Collecte & prise de vue sur site", d: "Déplacement offert jusqu'à 15 km : audit de l'établissement et photos professionnelles." },
+  { t: "Construction en staging", d: "Un environnement de recette identique à la production, que vous validez avant bascule." },
+  { t: "Mise en ligne + formation", d: "Bascule DNS, vérifications, remise des accès et prise en main de l'espace privé." },
+];
+---
+
+<BaseLayout
+  title="Agence digitale & IA de proximité à Reims"
+  description={SITE.description}
+  path="/"
+>
+  <Hero
+    title="Écosystèmes digitaux & agents IA pour les commerces de Reims"
+    subtitle="Site haute performance, prise de rendez-vous, paiement en ligne et assistant IA. Un partenaire technologique de proximité : déplacement sur site, photos professionnelles, contact humain direct."
+  />
+
+  <!-- Positionnement -->
+  <section class="container-page py-20">
+    <SectionHeading
+      eyebrow="Proximité + ingénierie"
+      title="Le digital d'une agence, la réactivité d'un artisan"
+      lead="Nous concevons et déployons des écosystèmes complets — site, RDV, paiement, IA conversationnelle, mini-CRM — pour les artisans, commerçants et PME de Reims et sa périphérie."
+    />
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      <div class="glass p-6">
+        <h3 class="font-semibold">Ancrage physique</h3>
+        <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Déplacement offert dans un rayon de {SITE.serviceRadiusKm} km autour de Reims : audit sur place,
+          prise de vue photographique, échange sans intermédiaire.
+        </p>
+      </div>
+      <div class="glass p-6">
+        <h3 class="font-semibold">Mise en ligne rapide</h3>
+        <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Mise en ligne technique sous 24h à 48h à compter de la réception complète et validée
+          de vos contenus. Le délai démarre au dernier élément manquant reçu.
+        </p>
+      </div>
+      <div class="glass p-6">
+        <h3 class="font-semibold">Performance mesurée</h3>
+        <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Chaque site est livré avec un rapport de recette : scores Lighthouse, Core Web Vitals,
+          conformité RGPD et tests fonctionnels.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Packs -->
+  <section id="offres" class="container-page py-20">
+    <SectionHeading eyebrow="Offres" title="Deux packs clé en main, sans engagement" lead="L'abonnement mensuel couvre l'hébergement, les mises à jour de sécurité et le support. Résiliable avec 30 jours de préavis." />
+    <div class="mt-12 grid gap-6 lg:grid-cols-2">
+      {PACKS.map((p) => <PackCard pack={p} featured={p.id === "pro"} />)}
+    </div>
+    <p class="mt-6 text-center text-sm text-[var(--color-ink-muted)]">
+      Besoin d'une boutique, d'un module devis-photo, d'un assistant IA ou de publicité locale ?
+      <a class="link-underline" href="/offres">Voir toutes les options →</a>
+    </p>
+  </section>
+
+  <!-- Calculateur -->
+  <section class="container-page py-20">
+    <SectionHeading eyebrow="Devis en ligne" title="Estimez votre projet en une minute" lead="Un total transparent, recalculé à chaque clic, envoyé sur WhatsApp ou par e-mail. Sans inscription." />
+    <div class="mx-auto mt-12 max-w-3xl">
+      <QuoteCalculator />
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section class="container-page py-20">
+    <SectionHeading eyebrow="Engagements" title="Des objectifs chiffrés, vérifiés à la recette" />
+    <dl class="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3">
+      {
+        kpis.map((k) => (
+          <div class="glass p-5 text-center">
+            <dt class="text-xs text-[var(--color-ink-faint)]">{k.label}</dt>
+            <dd class="mt-2 text-2xl font-semibold text-[var(--color-cyan-text)]">{k.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <!-- Process -->
+  <section class="container-page py-20">
+    <SectionHeading eyebrow="Méthode" title="De la signature à la mise en ligne" />
+    <ol class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
+      {
+        steps.map((s, i) => (
+          <li class="glass flex gap-4 p-5">
+            <span class="text-2xl font-semibold text-[var(--color-amethyst-text)]">{String(i + 1).padStart(2, "0")}</span>
+            <span>
+              <span class="block font-semibold">{s.t}</span>
+              <span class="mt-1 block text-sm text-[var(--color-ink-muted)]">{s.d}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="container-page py-20">
+    <SectionHeading eyebrow="Contact direct" title="Parlons de votre projet" lead="Choisissez le canal qui vous arrange. Réponse rapide, sans intermédiaire." />
+    <div class="mx-auto mt-12 max-w-3xl">
+      <ContactChannels />
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,40 @@
+---
+/*
+  Couverture d'article générée (dégradé + concept visuel en légende).
+  L'image conceptuelle finale (§10) est à produire ; ce composant tient lieu
+  de placeholder léger et cohérent avec la direction artistique.
+*/
+export interface Props {
+  cover: "cyan" | "amethyst" | "emerald" | "aurora";
+  concept: string;
+  compact?: boolean;
+}
+const { cover, concept, compact = false } = Astro.props;
+
+const gradients: Record<Props["cover"], string> = {
+  cyan: "radial-gradient(120% 120% at 0% 0%, #22d3ee55, transparent 60%), radial-gradient(120% 120% at 100% 100%, #0ea5b755, transparent 55%), #0c111c",
+  amethyst:
+    "radial-gradient(120% 120% at 0% 0%, #a78bfa55, transparent 60%), radial-gradient(120% 120% at 100% 100%, #7c3aed55, transparent 55%), #0c111c",
+  emerald:
+    "radial-gradient(120% 120% at 0% 0%, #34d39955, transparent 60%), radial-gradient(120% 120% at 100% 100%, #0f9d6a55, transparent 55%), #0c111c",
+  aurora:
+    "radial-gradient(100% 140% at 10% 0%, #22d3ee44, transparent 55%), radial-gradient(100% 140% at 90% 20%, #a78bfa44, transparent 55%), radial-gradient(120% 120% at 50% 100%, #34d39944, transparent 60%), #0c111c",
+};
+---
+
+<div
+  class:list={[
+    "relative w-full overflow-hidden rounded-xl border border-[var(--color-border)]",
+    compact ? "aspect-[16/9]" : "aspect-[2/1]",
+  ]}
+  style={`background: ${gradients[cover]};`}
+  role="img"
+  aria-label={`Illustration conceptuelle : ${concept}`}
+>
+  <div class="absolute inset-0 opacity-40 mix-blend-overlay" style="background-image: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,255,255,.05) 22px 23px);"></div>
+  {!compact && (
+    <p class="absolute bottom-3 left-4 right-4 text-xs text-[var(--color-ink-faint)]">
+      Concept visuel : {concept}
+    </p>
+  )}
+</div>

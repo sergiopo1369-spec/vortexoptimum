@@ -1,0 +1,64 @@
+---
+import LegalLayout from "../layouts/LegalLayout.astro";
+import { SITE, CONTACT } from "../config/site";
+
+const todo = (label: string) => `⟨à compléter : ${label}⟩`;
+---
+
+<LegalLayout
+  title="Mentions légales"
+  description="Mentions légales du site Vortexoptim."
+  path="/mentions-legales"
+  updated="8 septembre 2026"
+>
+  <h2>Éditeur du site</h2>
+  <p>
+    <strong>{SITE.legalName}</strong><br />
+    Forme juridique : <span class="todo">{SITE.legalForm || todo("statut juridique — auto-entrepreneur, SARL…")}</span><br />
+    SIRET / SIREN : <span class="todo">{SITE.siret || todo("numéro SIRET/SIREN")}</span><br />
+    Siège : <span class="todo">{todo("adresse du siège")}</span><br />
+    E-mail : <a href={`mailto:${SITE.email}`}>{SITE.email}</a><br />
+    Téléphone : {CONTACT.whatsapp.display}
+  </p>
+
+  <h2>Directeur de la publication</h2>
+  <p>
+    <span class="todo">{SITE.publicationDirector || todo("nom du directeur de la publication")}</span>
+  </p>
+
+  <h2>Hébergeur</h2>
+  <p>
+    <span class="todo">{SITE.host.name || todo("nom de l'hébergeur")}</span><br />
+    <span class="todo">{SITE.host.address || todo("adresse de l'hébergeur")}</span>
+  </p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    L'ensemble des contenus de ce site (textes, éléments graphiques, code) est protégé par le droit
+    d'auteur. Le code source et les contenus produits par l'agence pour un client lui sont cédés au
+    solde complet des factures ; en dehors de ce cadre, toute reproduction sans autorisation écrite
+    est interdite.
+  </p>
+
+  <h2>Responsabilité</h2>
+  <p>
+    Les informations diffusées sur ce site le sont à titre indicatif et n'ont pas de valeur
+    contractuelle. Seul le devis signé fait foi quant au périmètre, aux tarifs et aux délais.
+  </p>
+
+  <h2>Liens</h2>
+  <p>
+    Ce site renvoie vers des services tiers (WhatsApp, Cal.com, Google). L'agence n'est pas
+    responsable du contenu ni des pratiques de confidentialité de ces services.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Pour toute question relative au site ou à son contenu : <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+  </p>
+
+  <p class="todo">
+    ⚠️ Page à finaliser avant mise en production : remplacer chaque mention ⟨à compléter⟩ par les
+    informations réelles collectées auprès du client (voir §17.2 du cahier des charges).
+  </p>
+</LegalLayout>

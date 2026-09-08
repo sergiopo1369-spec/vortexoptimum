@@ -1,0 +1,92 @@
+---
+import LegalLayout from "../layouts/LegalLayout.astro";
+import { SITE } from "../config/site";
+
+const soustraitants = [
+  ["Hébergeur", "Contenu du site, logs serveur", "UE de préférence", "Exécution du contrat"],
+  ["Base de données (PocketBase / Supabase)", "Données du mini-CRM (contact, projet)", "À documenter au contrat", "Intérêt légitime / consentement"],
+  ["Stripe", "Données de paiement", "UE / US (clauses contractuelles types)", "Exécution du contrat"],
+  ["Cal.com / Planity / Treatwell", "Données de rendez-vous", "À documenter", "Exécution du contrat"],
+  ["Fournisseur IA conversationnelle", "Historique de conversation", "À documenter", "Consentement / intérêt légitime"],
+];
+---
+
+<LegalLayout
+  title="Politique de confidentialité"
+  description="Traitement des données personnelles sur le site Vortexoptim : finalités, durées de conservation, sous-traitants et droits RGPD."
+  path="/politique-de-confidentialite"
+  updated="8 septembre 2026"
+>
+  <p>
+    La présente politique décrit le traitement des données personnelles collectées via ce site.
+    Le client final (l'entreprise éditrice du site) agit comme <strong>responsable de traitement</strong> ;
+    {SITE.name} intervient comme <strong>sous-traitant</strong> au sens du RGPD pour l'hébergement et
+    la maintenance technique.
+  </p>
+
+  <h2>1. Données collectées et finalités</h2>
+  <ul>
+    <li><strong>Formulaire de contact / calculateur de devis :</strong> nom, enseigne, téléphone, e-mail, contenu du message. Finalité : répondre à la demande et établir un devis.</li>
+    <li><strong>Mini-CRM (après prise de contact) :</strong> coordonnées, type de commerce, statut du projet, montants, documents transmis. Finalité : suivi commercial et contractuel.</li>
+    <li><strong>Prise de rendez-vous :</strong> nom, coordonnées, créneau. Finalité : organisation du rendez-vous et rappels.</li>
+    <li><strong>Cookies :</strong> voir section 5. Aucun cookie de mesure ou publicitaire n'est déposé sans consentement.</li>
+  </ul>
+  <p>
+    Le calculateur de devis n'enregistre aucune donnée : le récapitulatif est transmis par le
+    visiteur lui-même via WhatsApp ou e-mail.
+  </p>
+
+  <h2>2. Base légale</h2>
+  <p>
+    Exécution de mesures précontractuelles et du contrat (devis, prestation), intérêt légitime
+    (suivi de la relation client) et consentement (cookies non essentiels, communications marketing).
+  </p>
+
+  <h2>3. Durées de conservation</h2>
+  <ul>
+    <li><strong>Prospect sans suite :</strong> 3 ans maximum à compter du dernier contact, puis suppression ou anonymisation.</li>
+    <li><strong>Client actif :</strong> durée de la relation contractuelle, puis archivage selon les obligations légales (10 ans pour les pièces comptables).</li>
+    <li><strong>Documents / photos liés à un devis non signé :</strong> suppression sous 12 mois.</li>
+  </ul>
+
+  <h2>4. Sous-traitants et destinataires</h2>
+  <table>
+    <thead>
+      <tr><th>Sous-traitant</th><th>Donnée traitée</th><th>Localisation</th><th>Base légale</th></tr>
+    </thead>
+    <tbody>
+      {soustraitants.map((r) => (
+        <tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>Les données ne sont ni vendues ni cédées à des fins publicitaires par des tiers.</p>
+
+  <h2>5. Cookies</h2>
+  <p>
+    Le site n'utilise par défaut que des cookies strictement nécessaires. Les mesures d'audience
+    et les pixels publicitaires (Google Ads, Meta Ads) ne sont chargés qu'après un consentement
+    explicite via le bandeau. Vous pouvez modifier votre choix à tout moment via le lien
+    « Gérer les cookies » en pied de page.
+  </p>
+
+  <h2>6. Vos droits</h2>
+  <p>
+    Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition
+    et de portabilité. Pour l'exercer : <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).
+  </p>
+
+  <h2>7. Sécurité</h2>
+  <p>
+    HTTPS forcé (HSTS) sur l'ensemble du site, authentification du panneau d'administration
+    (2FA recommandée), sauvegardes chiffrées du mini-CRM. Aucune donnée de carte bancaire n'est
+    stockée : le paiement est délégué à Stripe (conformité PCI-DSS).
+  </p>
+
+  <p class="todo">
+    ⚠️ À finaliser avant mise en production : préciser l'identité du responsable de traitement
+    (client), les localisations exactes des sous-traitants retenus et, le cas échéant, le contact
+    du référent RGPD (§7 du cahier des charges).
+  </p>
+</LegalLayout>

@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { NAV } from "../config/site";
+---
+
+<BaseLayout title="Page introuvable" description="La page demandée n'existe pas ou a été déplacée." path="/404" noindex>
+  <section class="container-page flex min-h-[60vh] flex-col items-center justify-center py-24 text-center">
+    <p class="eyebrow">Erreur 404</p>
+    <h1 class="mt-3 text-4xl font-semibold sm:text-5xl">Cette page n'existe pas</h1>
+    <p class="mt-4 max-w-md text-[var(--color-ink-muted)]">
+      Le lien est peut-être obsolète. Revenez à l'accueil ou utilisez la navigation.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      {NAV.map((i) => (
+        <a class="btn btn-ghost text-sm" href={i.href}>{i.label}</a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

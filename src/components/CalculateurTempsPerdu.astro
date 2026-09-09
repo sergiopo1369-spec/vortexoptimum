@@ -2,123 +2,180 @@
 /*
   Audit Éclair — questionnaire 4 étapes + calcul déterministe (Vanilla JS, zéro dépendance).
 
-  Étape 1 : quatre questions de qualification (friction, volume hebdo, relance devis,
-            temps administratif déclaré).
+  Étape 1 : quatre questions de qualification (friction dominante, volume hebdo,
+            relance devis, temps administratif déclaré). Les QUATRE pèsent sur le
+            résultat — Q1 pondère la répartition des pertes (no-show vs contacts manqués).
   Étape 2 : algorithme déterministe (constantes et formules dans le <script> client ;
             le frontmatter ne fournit que les données des questions + paramètres).
-  Étape 3 : restitution (alerte opérationnelle #080c14 / ambre + projection Vortex Optim
-            cyan #00e5ff + CTA redirigeant vers /devis avec pré-remplissage du pack pro).
+  Étape 3 : restitution (alerte opérationnelle ambre + projection Vortex Optim cyan
+            #00e5ff + CTA redirigeant vers /devis avec pré-remplissage du pack pro).
 
   Accessibilité : navigation clavier native (fieldset/legend + radios), libellés
-  explicites, focus conservé à chaque transition, prefers-reduced-motion respecté.
+  explicites, focus conservé à chaque transition, prefers-reduced-motion respecté
+  (compteurs animés et transitions désactivés).
 */
 
 /** Option de question (champs optionnels selon la question Q1→Q4). */
 type QuizOption = {
   label: string;
   emoji?: string;
+  /** Q1 — pondération de la friction dominante. */
+  tauxNoShow?: number;
+  tauxContact?: number;
   /** Q2 — volume hebdomadaire + panier moyen. */
   volume?: number;
   panier?: number;
-  /** Q3 — taux de perte de devis. */
+  /** Q3 — taux de devis perdus faute de relance. */
   taux?: number;
   /** Q4 — heures administratives déclarées / semaine. */
   heures?: number;
 };
 
-type Question = { id: string; label: string; options: QuizOption[] };
+type Question = { id: string; label: string; hint: string; options: QuizOption[] };
 
+/*
+  Q1 est désormais QUANTITATIVE : la friction déclarée fixe le taux de no-show et le
+  taux de contacts manqués retenus dans le calcul. Une entreprise qui subit surtout des
+  no-shows n'a pas le même profil de perte qu'une entreprise noyée sous les appels.
+*/
 const QUESTIONS: Question[] = [
   {
     id: "friction",
     label: "Quelle est la principale friction dans vos opérations quotidiennes ?",
+    hint: "Elle détermine la répartition de vos pertes dans le calcul.",
     options: [
-      { label: "Interruption constante par les appels entrants et demandes de renseignements", emoji: "📞" },
-      { label: "Taux d'absentéisme client aux rendez-vous programmés (no-shows sans préavis)", emoji: "❌" },
-      { label: "Délai excessif dans l'édition et le suivi commercial des devis", emoji: "📝" },
-      { label: "Messages WhatsApp et emails qui s'accumulent sans réponse rapide", emoji: "💬" },
+      {
+        label: "Interruption constante par les appels entrants et demandes de renseignements",
+        emoji: "📞",
+        tauxNoShow: 0.08,
+        tauxContact: 0.06,
+      },
+      {
+        label: "Absentéisme client aux rendez-vous programmés (no-shows sans préavis)",
+        emoji: "❌",
+        tauxNoShow: 0.14,
+        tauxContact: 0.02,
+      },
+      {
+        label: "Délai excessif dans l'édition et le suivi commercial des devis",
+        emoji: "📝",
+        tauxNoShow: 0.07,
+        tauxContact: 0.03,
+      },
+      {
+        label: "Messages WhatsApp et e-mails qui s'accumulent sans réponse rapide",
+        emoji: "💬",
+        tauxNoShow: 0.09,
+        tauxContact: 0.07,
+      },
     ],
   },
   {
     id: "volume",
     label: "Quel est le volume hebdomadaire moyen de dossiers, clients ou chantiers traités ?",
+    hint: "Sert à estimer votre chiffre d'affaires annuel de référence.",
     options: [
-      { label: "Moins de 10 clients / semaine", volume: 8, panier: 450 },
-      { label: "10 à 25 clients / semaine", volume: 18, panier: 280 },
-      { label: "25 à 50 clients / semaine", volume: 38, panier: 160 },
-      { label: "Plus de 50 clients / semaine", volume: 65, panier: 110 },
+      { label: "Moins de 10 clients / semaine", emoji: "🌱", volume: 8, panier: 450 },
+      { label: "10 à 25 clients / semaine", emoji: "📈", volume: 18, panier: 280 },
+      { label: "25 à 50 clients / semaine", emoji: "🚀", volume: 38, panier: 160 },
+      { label: "Plus de 50 clients / semaine", emoji: "🏭", volume: 65, panier: 110 },
     ],
   },
   {
     id: "relance",
     label: "Quel est votre protocole actuel de relance des devis en attente ?",
+    hint: "Un devis non relancé sous 48 h perd l'essentiel de ses chances de signature.",
     options: [
-      { label: "Relance systématique et manuelle sous 48h", taux: 0.1 },
-      { label: "Relance ponctuelle selon la charge de travail restante", taux: 0.25 },
-      { label: "Absence de relance formalisée par manque de temps", taux: 0.45 },
-      { label: "Suivi partiel sur carnet ou tableur sans automatisation", taux: 0.3 },
+      { label: "Relance systématique et manuelle sous 48 h", emoji: "✅", taux: 0.1 },
+      { label: "Relance ponctuelle selon la charge de travail restante", emoji: "🔁", taux: 0.25 },
+      { label: "Suivi partiel sur carnet ou tableur, sans automatisation", emoji: "📒", taux: 0.3 },
+      { label: "Aucune relance formalisée, par manque de temps", emoji: "🚫", taux: 0.45 },
     ],
   },
   {
     id: "heures",
-    label:
-      "Selon vous, combien d'heures par semaine ces tâches administratives et répétitives vous font-elles perdre ?",
+    label: "Combien d'heures par semaine ces tâches administratives et répétitives vous coûtent-elles ?",
+    hint: "Comptabilisé séparément du chiffre d'affaires — aucun double comptage.",
     options: [
-      { label: "Moins de 3 heures / semaine", heures: 2.5 },
-      { label: "3 à 6 heures / semaine", heures: 4.5 },
-      { label: "6 à 10 heures / semaine", heures: 8 },
-      { label: "Plus de 10 heures / semaine (soirées et week-ends entamés)", heures: 12 },
+      { label: "Moins de 3 heures / semaine", emoji: "🕐", heures: 2.5 },
+      { label: "3 à 6 heures / semaine", emoji: "🕓", heures: 4.5 },
+      { label: "6 à 10 heures / semaine", emoji: "🕗", heures: 8 },
+      { label: "Plus de 10 heures / semaine (soirées et week-ends entamés)", emoji: "🕛", heures: 12 },
     ],
   },
 ];
 
-/** Paramètres fixes du modèle (Étape 2). */
+/*
+  Paramètres fixes du modèle (Étape 2). Toutes les hypothèses sont explicitées dans le
+  bloc « Méthodologie » affiché au prospect : un chiffre invérifiable ne convainc pas.
+*/
 const PARAMS = {
   semainesAn: 46,
   valeurHoraire: 55,
-  noShow: 0.12,
+  /** Part des clients passant par un devis formel. */
+  partDevis: 0.35,
+  /** Un créneau manqué est partiellement rattrapé : seule une fraction est perdue. */
+  partPerdueNoShow: 0.5,
+  /** Tous les devis perdus ne l'étaient pas faute de relance. */
+  partPerdueDevis: 0.5,
+  /** Taux de récupération par l'automatisation (hypothèses prudentes). */
+  recupNoShow: 0.7,
+  recupDevis: 0.55,
+  recupContact: 0.65,
+  recupTemps: 0.6,
+  /** Garde-fou : la perte annoncée ne peut dépasser 15 % du CA estimé. */
+  plafondPertePctCa: 0.15,
   forfaitAn: 1398,
-  roiMin: 4,
-  roiMax: 9,
 } as const;
 ---
 
-<section id="calculateur-roi" class="relative scroll-mt-24 border-t border-slate-800/80 bg-slate-950/60 py-16 md:py-20">
-  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+<section
+  id="calculateur-roi"
+  class="roi-section relative scroll-mt-24 overflow-hidden border-t border-slate-800/80 py-16 md:py-20"
+>
+  <div class="roi-glow" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
     <!-- En-tête -->
     <div class="mx-auto mb-8 max-w-2xl text-center">
       <span
-        class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400"
+        class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300"
       >
-        ⚡ Audit Éclair — sans engagement
+        <span class="roi-pulse" aria-hidden="true"></span>
+        Audit Éclair — 30 secondes, sans engagement
       </span>
       <h2 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-        Audit Éclair : Évaluez le manque à gagner opérationnel de votre entreprise
+        Combien vous coûte réellement votre organisation actuelle&nbsp;?
       </h2>
       <p class="mt-2 text-sm text-slate-400">
-        4 paramètres clés pour quantifier avec précision vos fuites de chiffre d'affaires et d'heures dirigeant.
+        4 questions pour chiffrer vos fuites de chiffre d'affaires et vos heures dirigeant.
+        Calcul transparent, hypothèses affichées.
       </p>
     </div>
 
     <!-- Wizard : 4 étapes de qualification -->
     <div id="roi-wizard" class="mx-auto max-w-3xl" aria-live="polite" aria-relevant="all">
-      <div class="mb-5 flex items-center justify-between gap-3">
-        <p id="roi-progress-label" class="text-xs font-semibold uppercase tracking-wide text-cyan-400">
-          Question 1 / 4
-        </p>
-        <ol class="flex items-center gap-1.5" aria-label="Progression du questionnaire">
-          {QUESTIONS.map((_, i) => (
-            <li>
-              <span
-                id={`roi-dot-${i}`}
-                class="roi-dot"
-                data-active={i === 0 ? "true" : "false"}
-                data-done="false"
-                aria-hidden="true"
-              ></span>
-            </li>
-          ))}
-        </ol>
+      <div class="mb-4">
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <p id="roi-progress-label" class="text-xs font-semibold uppercase tracking-wide text-cyan-300">
+            Question 1 / 4
+          </p>
+          <ol class="flex items-center gap-1.5" aria-label="Progression du questionnaire">
+            {QUESTIONS.map((_, i) => (
+              <li>
+                <span
+                  id={`roi-dot-${i}`}
+                  class="roi-dot"
+                  data-active={i === 0 ? "true" : "false"}
+                  data-done="false"
+                  aria-hidden="true"></span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div class="roi-track" aria-hidden="true">
+          <span id="roi-bar" class="roi-bar" style="width:25%"></span>
+        </div>
       </div>
 
       <div class="grid gap-2">
@@ -129,102 +186,181 @@ const PARAMS = {
             hidden={qi > 0}
             data-step={qi + 1}
           >
-            <legend class="text-base font-semibold text-white">{qi + 1}. {q.label}</legend>
-            <div class="mt-4 grid gap-3">
+            <legend class="text-base font-semibold text-white" tabindex="-1">
+              {qi + 1}. {q.label}
+            </legend>
+            <p class="mt-1 text-xs text-slate-400">{q.hint}</p>
+            <div class="mt-4 grid gap-2.5">
               {q.options.map((o, oi) => (
-                <label
-                  class="roi-opt flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-700 bg-slate-900/40 p-3.5 transition-colors hover:border-cyan-400/40"
-                >
+                <label class="roi-opt">
                   <input type="radio" name={`roi-q${qi + 1}`} value={String(oi)} class="sr-only" />
-                  <span class="min-h-6 text-sm leading-relaxed text-slate-200">
-                    {o.emoji ? `${o.emoji} ` : ""}{o.label}
-                  </span>
+                  <span class="roi-opt-icon" aria-hidden="true">{o.emoji}</span>
+                  <span class="roi-opt-label">{o.label}</span>
+                  <span class="roi-opt-check" aria-hidden="true">→</span>
                 </label>
               ))}
             </div>
+            {qi > 0 && (
+              <button type="button" class="roi-back" data-back={qi + 1}>
+                ← Question précédente
+              </button>
+            )}
           </fieldset>
         ))}
       </div>
     </div>
-<!-- Analyse en cours (1,2 s) -->
-    <div id="roi-analyse" class="mx-auto max-w-3xl relative" hidden>
+
+    <!-- Analyse en cours (1,2 s) -->
+    <div id="roi-analyse" class="mx-auto max-w-3xl" hidden>
       <div
-        class="rounded-2xl border border-cyan-500/30 bg-[#080c14] px-6 py-8 text-center shadow-[0_0_30px_rgba(0,229,255,0.10)]"
+        class="rounded-2xl border border-cyan-500/30 bg-[#080c14] px-6 py-10 text-center shadow-[0_0_30px_rgba(0,229,255,0.10)]"
       >
         <span class="roi-spinner" aria-hidden="true"></span>
         <p class="mt-4 text-sm font-medium text-cyan-300">Calcul de vos métriques opérationnelles…</p>
-        <p class="mt-1 text-xs text-slate-500">Analyse de vos réponses en cours.</p>
+        <p id="roi-analyse-step" class="mt-1 text-xs text-slate-400">Analyse de vos réponses en cours.</p>
       </div>
     </div>
 
     <!-- Rapport & conversion -->
     <div id="roi-resultat" class="mx-auto max-w-3xl" hidden>
       <div class="grid gap-5 sm:grid-cols-2">
-        <article class="rounded-2xl border border-amber-500/40 bg-[#080c14] p-5 shadow-[0_0_26px_rgba(251,191,36,0.10)]">
+        <!-- Carte 1 : alerte -->
+        <article class="roi-card roi-card-alert" style="--roi-delay:0ms">
           <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-300">
             <span aria-hidden="true">⚠</span> Alerte opérationnelle
           </p>
-          <dl class="mt-3 space-y-2.5 text-sm">
-            <div class="space-y-0.5">
+          <dl class="mt-4 space-y-4 text-sm">
+            <div class="space-y-1">
+              <dt class="text-xs text-slate-400">Chiffre d'affaires non capté</dt>
+              <dd class="text-3xl font-extrabold tabular-nums text-amber-300">
+                <span id="roi-perte">—</span>
+                <span class="text-xs font-normal text-slate-400">/ an</span>
+              </dd>
+              <dd class="roi-gauge" aria-hidden="true">
+                <span id="roi-gauge-fill" class="roi-gauge-fill roi-gauge-amber" style="width:0%"></span>
+              </dd>
+              <dd class="text-[11px] text-slate-400">
+                soit <span id="roi-pct" class="font-semibold text-amber-200">—</span> de votre CA annuel estimé
+                (<span id="roi-ca">—</span>).
+              </dd>
+            </div>
+            <div class="space-y-1 border-t border-amber-500/20 pt-3">
               <dt class="text-xs text-slate-400">Temps dirigeant mobilisé</dt>
-              <dd class="text-xl font-extrabold text-white">
-                <span id="roi-heures">—</span> h / mois
-                <span class="text-xs font-normal text-slate-400">(~ <span id="roi-heures-sem">—</span> h/semaine)</span>
+              <dd class="text-2xl font-extrabold tabular-nums text-white">
+                <span id="roi-heures">—</span> h <span class="text-xs font-normal text-slate-400">/ mois</span>
+              </dd>
+              <dd class="text-[11px] text-slate-400">
+                ~ <span id="roi-heures-sem">—</span> h/semaine, valorisées
+                <span id="roi-cout-temps" class="font-semibold text-amber-200">—</span>/an à 55 €/h.
               </dd>
             </div>
-            <div class="space-y-0.5">
-              <dt class="text-xs text-slate-400">Friction économique totale</dt>
-              <dd class="text-xl font-extrabold text-amber-300">
-                <span id="roi-perte">—</span> € <span class="text-xs font-normal text-slate-400">/ an</span>
-              </dd>
-              <dd class="text-[11px] text-slate-500">de chiffre d'affaires non capté.</dd>
-            </div>
-            <p class="border-t border-amber-500/20 pt-2 text-[11px] text-slate-400">
-              Friction principale : <span id="roi-friction" class="text-amber-200">—</span>
+            <p class="border-t border-amber-500/20 pt-3 text-[11px] leading-relaxed text-slate-400">
+              Friction dominante : <span id="roi-friction" class="text-amber-200">—</span>
             </p>
           </dl>
         </article>
 
-        <article class="rounded-2xl border border-cyan-400/40 bg-[#080c14] p-5 shadow-[0_0_30px_rgba(0,229,255,0.14)]">
+        <!-- Carte 2 : projection -->
+        <article class="roi-card roi-card-gain" style="--roi-delay:140ms">
           <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cyan-300">
-            <span aria-hidden="true">▲</span> Solution &amp; projection Vortex Optim
+            <span aria-hidden="true">▲</span> Projection Vortex Optim
           </p>
-          <dl class="mt-3 space-y-2.5 text-sm">
-            <div class="space-y-0.5">
-              <dt class="text-xs text-slate-400">Gain net récupérable</dt>
-              <dd class="text-xl font-extrabold text-white">
-                + <span id="roi-gain">—</span> € <span class="text-xs font-normal text-slate-400">/ an</span>
+          <dl class="mt-4 space-y-4 text-sm">
+            <div class="space-y-1">
+              <dt class="text-xs text-slate-400">Gain net récupérable, forfait déduit</dt>
+              <dd class="text-3xl font-extrabold tabular-nums text-white">
+                + <span id="roi-gain">—</span>
+                <span class="text-xs font-normal text-slate-400">/ an</span>
+              </dd>
+              <dd class="roi-gauge" aria-hidden="true">
+                <span id="roi-gauge-gain" class="roi-gauge-fill roi-gauge-cyan" style="width:0%"></span>
               </dd>
             </div>
-            <div class="space-y-0.5">
-              <dt class="text-xs text-slate-400">Facteur d'impact</dt>
-              <dd class="text-xl font-extrabold text-cyan-300">
-                ×<span id="roi-ratio">—</span>
-                <span class="text-xs font-normal text-slate-400">sur investissement</span>
-              </dd>
+            <div class="grid grid-cols-2 gap-3 border-t border-cyan-400/20 pt-3">
+              <div class="space-y-0.5">
+                <dt class="text-xs text-slate-400">Retour sur investissement</dt>
+                <dd class="text-2xl font-extrabold tabular-nums text-cyan-300">
+                  ×<span id="roi-ratio">—</span>
+                </dd>
+              </div>
+              <div class="space-y-0.5">
+                <dt class="text-xs text-slate-400">Temps libéré</dt>
+                <dd class="text-2xl font-extrabold tabular-nums text-cyan-300">
+                  <span id="roi-heures-gagnees">—</span> h
+                  <span class="text-xs font-normal text-slate-400">/ mois</span>
+                </dd>
+              </div>
             </div>
           </dl>
-          <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Leviers activés</p>
-          <ul class="mt-1.5 space-y-1.5 text-xs leading-relaxed text-slate-300">
-            <li class="flex gap-2"><span class="text-cyan-400" aria-hidden="true">✓</span>Élimination de ~80% des no-shows via rappels WhatsApp/SMS automatiques.</li>
-            <li class="flex gap-2"><span class="text-cyan-400" aria-hidden="true">✓</span>Relances devis programmées sans friction humaine.</li>
-            <li class="flex gap-2"><span class="text-cyan-400" aria-hidden="true">✓</span>Prise de rendez-vous et qualification 24/7/365.</li>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Leviers activés</p>
+          <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-300">
+            <li class="flex gap-2">
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Rappels WhatsApp/SMS automatiques avant chaque
+              rendez-vous.
+            </li>
+            <li class="flex gap-2">
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Relances de devis programmées, sans intervention
+              humaine.
+            </li>
+            <li class="flex gap-2">
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Prise de rendez-vous et qualification 24/7.
+            </li>
           </ul>
         </article>
       </div>
 
+      <!-- Méthodologie : un chiffre invérifiable ne convainc pas -->
+      <details class="roi-method">
+        <summary>Comment ces montants sont-ils calculés&nbsp;?</summary>
+        <div class="roi-method-body">
+          <p>
+            Estimation déterministe à partir de vos 4 réponses. Aucune donnée n'est envoyée&nbsp;: le calcul
+            s'exécute dans votre navigateur.
+          </p>
+          <ul>
+            <li>
+              <strong>Base annuelle</strong> — 46 semaines travaillées, panier moyen indicatif associé à votre
+              tranche de volume.
+            </li>
+            <li>
+              <strong>No-shows</strong> — taux déduit de votre friction principale (8 à 14 %), dont la moitié
+              seulement est considérée comme définitivement perdue.
+            </li>
+            <li>
+              <strong>Devis</strong> — 35 % des clients passent par un devis&nbsp;; la moitié des devis perdus est
+              imputée au défaut de relance.
+            </li>
+            <li>
+              <strong>Contacts manqués</strong> — appels et messages sans réponse, 2 à 7 % du volume selon votre
+              friction principale.
+            </li>
+            <li>
+              <strong>Plafond de prudence</strong> — la perte affichée est plafonnée à 15 % du CA estimé.
+            </li>
+            <li>
+              <strong>Temps dirigeant</strong> — compté <em>séparément</em> et valorisé à 55 €/h. Il n'est jamais
+              additionné au chiffre d'affaires, pour éviter tout double comptage.
+            </li>
+            <li>
+              <strong>Récupération</strong> — hypothèses prudentes&nbsp;: 70 % des no-shows, 55 % des devis perdus,
+              65 % des contacts manqués, 60 % du temps administratif.
+            </li>
+          </ul>
+          <p class="roi-method-note">
+            Ces chiffres sont une estimation, pas un engagement contractuel. Un audit sur vos données réelles
+            affine la projection.
+          </p>
+        </div>
+      </details>
+
       <div class="mt-6 flex flex-col items-center gap-3">
-        <a
-          id="roi-cta"
-          href="/devis?pack=pro"
-          class="roi-cta btn text-base"
-        >
-          Intégrer ce diagnostic à mon plan d'action personnalisé
+        <a id="roi-cta" href="/devis?pack=pro" class="roi-cta btn text-base">
+          Recevoir mon plan d'action personnalisé
         </a>
         <button id="roi-restart" type="button" class="btn btn-ghost text-xs">Recommencer l'audit</button>
-        <p class="text-center text-xs text-slate-400">
-          Estimation sur la base de vos 4 réponses — sans engagement. Le devis est pré-rempli avec le pack
-          Pro Connecté (1 398 € la première année), ajustable en un clic.
+        <p class="max-w-md text-center text-xs text-slate-400">
+          Le devis est pré-rempli avec le pack Pro Connecté (1&nbsp;398&nbsp;€ la première année), ajustable en un
+          clic. Sans engagement.
         </p>
       </div>
     </div>
@@ -238,8 +374,54 @@ const PARAMS = {
     />
   </div>
 </section>
+
 <style>
-  /* Points de progression du wizard */
+  .roi-section {
+    background:
+      radial-gradient(60rem 30rem at 50% 0%, rgba(0, 229, 255, 0.07), transparent 70%),
+      rgba(2, 6, 23, 0.6);
+  }
+  .roi-glow {
+    position: absolute;
+    inset-inline: 0;
+    top: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.5), transparent);
+  }
+
+  /* Pastille pulsante de l'en-tête */
+  .roi-pulse {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 9999px;
+    background: #00e5ff;
+    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.6);
+    animation: roi-pulse 2s ease-out infinite;
+  }
+  @keyframes roi-pulse {
+    70% {
+      box-shadow: 0 0 0 0.5rem rgba(0, 229, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+    }
+  }
+
+  /* Barre + points de progression */
+  .roi-track {
+    height: 3px;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.18);
+    overflow: hidden;
+  }
+  .roi-bar {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #22d3ee, #00e5ff);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+    transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
   .roi-dot {
     width: 0.5rem;
     height: 0.5rem;
@@ -247,6 +429,9 @@ const PARAMS = {
     border-radius: 9999px;
     border: 1px solid rgba(148, 163, 184, 0.6);
     background: transparent;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
   }
   .roi-dot[data-active="true"] {
     background: #00e5ff;
@@ -258,7 +443,55 @@ const PARAMS = {
     border-color: rgba(0, 229, 255, 0.5);
   }
 
-  /* Option de réponse : état coché géré en CSS via :has() */
+  /* Option de réponse */
+  .roi-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(51 65 85);
+    background: rgba(15, 23, 42, 0.4);
+    padding: 0.75rem 0.9rem;
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease,
+      transform 0.18s ease;
+  }
+  .roi-opt:hover {
+    border-color: rgba(0, 229, 255, 0.45);
+    background: rgba(8, 30, 44, 0.5);
+    transform: translateX(2px);
+  }
+  .roi-opt-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 229, 255, 0.08);
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  .roi-opt-label {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: rgb(226 232 240);
+  }
+  .roi-opt-check {
+    flex: none;
+    color: rgba(148, 163, 184, 0.5);
+    font-size: 0.9rem;
+    transition:
+      color 0.18s ease,
+      transform 0.18s ease;
+  }
+  .roi-opt:hover .roi-opt-check {
+    color: #00e5ff;
+    transform: translateX(3px);
+  }
   .roi-opt:has(input:checked) {
     border-color: #00e5ff;
     background: rgba(4, 22, 34, 0.85);
@@ -266,19 +499,44 @@ const PARAMS = {
       0 0 0 1px rgba(0, 229, 255, 0.45),
       0 0 22px -8px rgba(0, 229, 255, 0.5);
   }
+  .roi-opt:has(input:checked) .roi-opt-icon {
+    background: rgba(0, 229, 255, 0.18);
+  }
+  .roi-opt:has(input:checked) .roi-opt-check {
+    color: #00e5ff;
+  }
   .roi-opt:has(input:focus-visible) {
     outline: 2px solid #00e5ff;
     outline-offset: 2px;
   }
 
-  /* Transition douce entre étapes */
+  /* Retour à la question précédente */
+  .roi-back {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: rgb(148 163 184);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0.25rem 0;
+  }
+  .roi-back:hover {
+    color: #00e5ff;
+  }
+  .roi-back:focus-visible {
+    outline: 2px solid #00e5ff;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Transition entre étapes */
   .roi-step:not([hidden]) {
-    animation: roi-step-in 0.26s ease;
+    animation: roi-step-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   @keyframes roi-step-in {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -286,7 +544,7 @@ const PARAMS = {
     }
   }
 
-  /* Spinner de l'analyse (1,2 s) */
+  /* Spinner de l'analyse */
   .roi-spinner {
     width: 2.25rem;
     height: 2.25rem;
@@ -300,6 +558,113 @@ const PARAMS = {
     to {
       transform: rotate(360deg);
     }
+  }
+
+  /* Cartes de restitution */
+  .roi-card {
+    border-radius: 1rem;
+    background: #080c14;
+    padding: 1.25rem;
+    animation: roi-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--roi-delay, 0ms);
+  }
+  .roi-card-alert {
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 26px rgba(251, 191, 36, 0.1);
+  }
+  .roi-card-gain {
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.14);
+  }
+  @keyframes roi-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Jauges */
+  .roi-gauge {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.16);
+    overflow: hidden;
+    margin-top: 0.4rem;
+  }
+  .roi-gauge-fill {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .roi-gauge-amber {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  }
+  .roi-gauge-cyan {
+    background: linear-gradient(90deg, #22d3ee, #00e5ff);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+
+  /* Méthodologie */
+  .roi-method {
+    margin-top: 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(30 41 59);
+    background: rgba(15, 23, 42, 0.4);
+  }
+  .roi-method > summary {
+    cursor: pointer;
+    padding: 0.7rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgb(148 163 184);
+    list-style: none;
+  }
+  .roi-method > summary::-webkit-details-marker {
+    display: none;
+  }
+  .roi-method > summary::before {
+    content: "＋ ";
+    color: #00e5ff;
+  }
+  .roi-method[open] > summary::before {
+    content: "－ ";
+  }
+  .roi-method > summary:hover {
+    color: #00e5ff;
+  }
+  .roi-method > summary:focus-visible {
+    outline: 2px solid #00e5ff;
+    outline-offset: -2px;
+    border-radius: 0.75rem;
+  }
+  .roi-method-body {
+    padding: 0 1rem 1rem;
+    font-size: 0.75rem;
+    line-height: 1.65;
+    color: rgb(148 163 184);
+  }
+  .roi-method-body ul {
+    margin: 0.6rem 0;
+    padding-left: 1.1rem;
+    list-style: disc;
+  }
+  .roi-method-body li {
+    margin-bottom: 0.3rem;
+  }
+  .roi-method-body strong {
+    color: rgb(203 213 225);
+  }
+  .roi-method-note {
+    margin-top: 0.6rem;
+    border-top: 1px solid rgb(30 41 59);
+    padding-top: 0.6rem;
+    font-style: italic;
   }
 
   /* CTA néon cyan */
@@ -317,36 +682,74 @@ const PARAMS = {
       0 0 30px -4px rgba(0, 229, 255, 0.8),
       0 0 60px -18px rgba(0, 229, 255, 0.55);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .roi-pulse,
+    .roi-spinner {
+      animation: none;
+    }
+    .roi-step:not([hidden]),
+    .roi-card {
+      animation: none;
+    }
+    .roi-opt,
+    .roi-opt-check,
+    .roi-bar,
+    .roi-gauge-fill {
+      transition: none;
+    }
+    .roi-opt:hover {
+      transform: none;
+    }
+  }
 </style>
+
 <script>
   /**
    * Audit Éclair — logique du tunnel 4 étapes (Vanilla JS, zéro dépendance).
-   * Étape 2 — algorithme déterministe :
-   *   heures_mois  = round(heures_declarees_semaine × 4,2)
-   *   perte_noshow = volume × 0,12 × panier × 46
-   *   perte_devis  = volume × taux_perte_devis × panier × 0,35 × 46
-   *   cout_temps   = (heures_mois × 12) × 55
-   *   perte_totale = round(perte_noshow + perte_devis + cout_temps × 0,4)
-   *   gain_brut    = round(perte_noshow × 0,80 + perte_devis × 0,65 + cout_temps × 0,70)
-   *   gain_net     = gain_brut − forfait
-   *   roi          = min(max(round(gain_brut / forfait), 4), 9)
+   *
+   * Étape 2 — algorithme déterministe. Trois principes de cohérence :
+   *   (a) les QUATRE réponses pèsent sur le résultat (Q1 fixe les taux de friction) ;
+   *   (b) le temps dirigeant est chiffré À PART du chiffre d'affaires — jamais additionné,
+   *       donc jamais compté deux fois (une fois en perte, une fois en gain) ;
+   *   (c) la perte de CA est plafonnée à 15 % du CA estimé, et le gain est réduit dans la
+   *       MÊME proportion, ce qui garde le ratio cohérent avec le montant affiché.
+   *
+   *   ca_annuel     = volume × panier × 46
+   *   perte_noshow  = volume × taux_noshow × panier × 0,5 × 46
+   *   perte_devis   = volume × 0,35 × taux_perte × panier × 0,5 × 46
+   *   perte_contact = volume × taux_contact × panier × 46
+   *   perte_brute   = perte_noshow + perte_devis + perte_contact
+   *   facteur       = min(1, 0,15 × ca_annuel / perte_brute)      ← plafond de prudence
+   *   perte_ca      = round(perte_brute × facteur)
+   *   cout_temps    = heures_sem × 46 × 55                        ← affiché séparément
+   *   gain_ca       = round((0,70×p_ns + 0,55×p_dev + 0,65×p_ct) × facteur)
+   *   gain_net      = gain_ca − 1 398
+   *   roi           = gain_ca / 1 398                             ← libre, jamais borné
    */
   const raw = document.getElementById("roi-config")?.textContent;
   const wizard = document.getElementById("roi-wizard");
   if (raw && wizard) {
     const cfg = JSON.parse(raw);
+    const P = cfg.params;
     const reduced =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const eur0 = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+    const eur0 = new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    });
     const num1 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
 
     const $ = (id: string): HTMLElement => document.getElementById(id)!;
     const stepEls = [1, 2, 3, 4].map((n) => $(`roi-step-${n}`));
     const dotEls = [0, 1, 2, 3].map((i) => $(`roi-dot-${i}`));
     const progressLabel = $("roi-progress-label");
+    const barEl = $("roi-bar");
     const analyseEl = $("roi-analyse");
+    const analyseStep = $("roi-analyse-step");
     const resultatEl = $("roi-resultat");
     const wizardEl = wizard;
 
@@ -361,54 +764,122 @@ const PARAMS = {
         d.dataset.done = String(i + 1 < n);
       });
       progressLabel.textContent = `Question ${n} / 4`;
-      const next = stepEls[n - 1];
-      if (next) next.querySelector("legend")?.focus();
+      barEl.style.width = `${n * 25}%`;
+      stepEls[n - 1]?.querySelector("legend")?.focus();
+    }
+
+    /** Compteur animé : rend la restitution vivante sans dépendance externe. */
+    function animer(el: HTMLElement, cible: number, format: (v: number) => string) {
+      if (reduced) {
+        el.textContent = format(cible);
+        return;
+      }
+      const duree = 900;
+      const debut = performance.now();
+      const tick = (t: number) => {
+        const p = Math.min(1, (t - debut) / duree);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = format(cible * eased);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.textContent = format(cible);
+      };
+      requestAnimationFrame(tick);
     }
 
     function calculer() {
       const q = cfg.questions;
       const opt = (qi: number, fallback: number) => q[qi].options[choices[qi] ?? fallback];
-      const volume = opt(1, 1).volume ?? 0;
-      const panier = opt(1, 1).panier ?? 0;
-      const tauxPerte = opt(2, 1).taux ?? 0;
-      const heuresSem = opt(3, 1).heures ?? 0;
+      const f = opt(0, 0);
+      const v = opt(1, 1);
+      const r = opt(2, 1);
+      const h = opt(3, 1);
 
+      const tauxNoShow = f.tauxNoShow ?? 0.08;
+      const tauxContact = f.tauxContact ?? 0.03;
+      const volume = v.volume ?? 0;
+      const panier = v.panier ?? 0;
+      const tauxPerte = r.taux ?? 0;
+      const heuresSem = h.heures ?? 0;
+
+      const caAnnuel = volume * panier * P.semainesAn;
+
+      const pNoShow = volume * tauxNoShow * panier * P.partPerdueNoShow * P.semainesAn;
+      const pDevis = volume * P.partDevis * tauxPerte * panier * P.partPerdueDevis * P.semainesAn;
+      const pContact = volume * tauxContact * panier * P.semainesAn;
+      const pBrute = pNoShow + pDevis + pContact;
+
+      // Plafond de prudence : la perte ne peut excéder 15 % du CA estimé. Le MÊME facteur
+      // est appliqué au gain, sinon la carte annoncerait un gain supérieur à la perte.
+      const facteur = pBrute > 0 ? Math.min(1, (P.plafondPertePctCa * caAnnuel) / pBrute) : 1;
+      const perteCa = Math.round(pBrute * facteur);
+      const pctCa = caAnnuel > 0 ? perteCa / caAnnuel : 0;
+
+      // Temps dirigeant : compté à part, jamais additionné au CA (pas de double comptage).
       const heuresMois = Math.round(heuresSem * 4.2);
-      const perteNoShow = volume * cfg.params.noShow * panier * cfg.params.semainesAn;
-      const perteDevis = volume * tauxPerte * panier * 0.35 * cfg.params.semainesAn;
-      const coutTemps = heuresMois * 12 * cfg.params.valeurHoraire;
-      const perteTotale = Math.round(perteNoShow + perteDevis + coutTemps * 0.4);
-      const gainBrut = Math.round(perteNoShow * 0.8 + perteDevis * 0.65 + coutTemps * 0.7);
-      // Le gain affiché ET le facteur d'impact dérivent de la MÊME valeur bornée :
-      // sinon la carte annonce « ×9 » à côté d'un gain correspondant à ×62.
-      const gainBorne = Math.min(
-        Math.max(gainBrut, cfg.params.roiMin * cfg.params.forfaitAn),
-        cfg.params.roiMax * cfg.params.forfaitAn,
-      );
-      const gainNet = gainBorne - cfg.params.forfaitAn;
-      const roi = Math.round(gainBorne / cfg.params.forfaitAn);
-      const frictionLabel = opt(0, 0).label;
+      const heuresGagnees = Math.round(heuresMois * P.recupTemps);
+      const coutTemps = Math.round(heuresSem * P.semainesAn * P.valeurHoraire);
 
-      return { heuresMois, heuresSemaine: heuresSem, perteTotale, gainNet, roi, frictionLabel };
+      const gainCa = Math.round(
+        (pNoShow * P.recupNoShow + pDevis * P.recupDevis + pContact * P.recupContact) * facteur,
+      );
+      const gainNet = Math.max(0, gainCa - P.forfaitAn);
+      const roi = Math.round((gainCa / P.forfaitAn) * 10) / 10;
+
+      return {
+        caAnnuel,
+        perteCa,
+        pctCa,
+        coutTemps,
+        heuresMois,
+        heuresSemaine: heuresSem,
+        heuresGagnees,
+        gainNet,
+        roi,
+        frictionLabel: f.label,
+      };
     }
 
     function afficher(r: ReturnType<typeof calculer>) {
-      $("roi-heures").textContent = num1.format(r.heuresMois);
+      animer($("roi-perte"), r.perteCa, (v) => eur0.format(Math.round(v)));
+      animer($("roi-gain"), r.gainNet, (v) => eur0.format(Math.round(v)));
+      animer($("roi-ratio"), r.roi, (v) => num1.format(v));
+      animer($("roi-heures"), r.heuresMois, (v) => num1.format(Math.round(v)));
+      animer($("roi-heures-gagnees"), r.heuresGagnees, (v) => num1.format(Math.round(v)));
+
       $("roi-heures-sem").textContent = num1.format(r.heuresSemaine);
-      $("roi-perte").textContent = eur0.format(r.perteTotale);
+      $("roi-ca").textContent = eur0.format(r.caAnnuel);
+      $("roi-cout-temps").textContent = eur0.format(r.coutTemps);
+      $("roi-pct").textContent = `${num1.format(r.pctCa * 100)} %`;
       $("roi-friction").textContent = r.frictionLabel;
-      $("roi-gain").textContent = eur0.format(Math.max(0, r.gainNet));
-      $("roi-ratio").textContent = String(r.roi);
+
+      // Jauges : la perte se lit sur une échelle 0–20 % du CA ; le gain, en part de la perte.
+      const pctJauge = Math.min(100, (r.pctCa / 0.2) * 100);
+      const pctGain = r.perteCa > 0 ? Math.min(100, (r.gainNet / r.perteCa) * 100) : 0;
+      requestAnimationFrame(() => {
+        $("roi-gauge-fill").style.width = `${pctJauge}%`;
+        $("roi-gauge-gain").style.width = `${pctGain}%`;
+      });
     }
+
+    const ETAPES_ANALYSE = [
+      "Estimation de votre chiffre d'affaires de référence…",
+      "Calcul des rendez-vous et devis non convertis…",
+      "Valorisation de votre temps dirigeant…",
+    ];
 
     async function reveal() {
       wizardEl.hidden = true;
       analyseEl.hidden = false;
-      if (!reduced) await new Promise((res) => setTimeout(res, 1200));
+      if (!reduced) {
+        for (const texte of ETAPES_ANALYSE) {
+          analyseStep.textContent = texte;
+          await new Promise((res) => setTimeout(res, 480));
+        }
+      }
       analyseEl.hidden = true;
       const r = calculer();
-      afficher(r);
       resultatEl.hidden = false;
+      afficher(r);
       try {
         sessionStorage.setItem("vx_diag", JSON.stringify(r));
       } catch {
@@ -418,8 +889,7 @@ const PARAMS = {
     }
 
     for (let qi = 0; qi < 4; qi++) {
-      const radios = wizardEl.querySelectorAll<HTMLInputElement>(`input[name="roi-q${qi + 1}"]`);
-      radios.forEach((radio) => {
+      wizardEl.querySelectorAll<HTMLInputElement>(`input[name="roi-q${qi + 1}"]`).forEach((radio) => {
         radio.addEventListener("change", () => {
           if (!radio.checked) return;
           choices[qi] = Number(radio.value);
@@ -428,6 +898,12 @@ const PARAMS = {
         });
       });
     }
+
+    wizardEl.querySelectorAll<HTMLButtonElement>("[data-back]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        showStep(Number(btn.dataset.back) - 1);
+      });
+    });
 
     $("roi-restart").addEventListener("click", () => {
       wizardEl.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((r) => {
@@ -438,6 +914,7 @@ const PARAMS = {
       analyseEl.hidden = true;
       wizardEl.hidden = false;
       showStep(1);
+      wizardEl.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
     });
 
     showStep(1);

@@ -20,10 +20,12 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.4.0",
     "astro": "^5.13.0",
+    "three": "^0.180.0",
     "typescript": "^5.7.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
+    "@types/three": "^0.180.0",
     "ffmpeg-static": "^5.2.0",
     "tailwindcss": "^4.1.0",
     "vitest": "^2.1.0"

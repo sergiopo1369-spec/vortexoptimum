@@ -1,5 +1,6 @@
 ---
 import { CONTACT } from "../config/site";
+import InteractiveRobot3D from "./InteractiveRobot3D.astro";
 
 export interface Props {
   eyebrow?: string;
@@ -47,37 +48,45 @@ const VIDEO_WEBM = "/media/hero.webm";
     ></div>
   </div>
 
-  <div class="container-page relative z-10 flex min-h-[86svh] flex-col justify-center py-16 sm:py-24">
-    <p class="eyebrow">{eyebrow}</p>
-    <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
-    <p class="mt-6 max-w-2xl text-lg text-[var(--color-ink-muted)]">{subtitle}</p>
+  <div
+    class="container-page relative z-10 grid min-h-[86svh] items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
+  >
+    <div class="flex min-w-0 flex-col">
+      <p class="eyebrow">{eyebrow}</p>
+      <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
+      <p class="mt-6 max-w-2xl text-lg text-[var(--color-ink-muted)]">{subtitle}</p>
 
-    <div class="mt-9 flex flex-wrap gap-3">
-      <a class="btn btn-primary" href="/devis">Estimer mon projet en 1 min</a>
-      <a class="btn btn-ghost" href={CONTACT.calcom.url} rel="noopener">
-        {CONTACT.calcom.label}
-      </a>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <a class="btn btn-primary" href="/devis">Estimer mon projet en 1 min</a>
+        <a class="btn btn-ghost" href={CONTACT.calcom.url} rel="noopener">
+          {CONTACT.calcom.label}
+        </a>
+      </div>
+
+      <dl class="mt-12 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 text-sm min-[420px]:grid-cols-3">
+        <div class="min-w-0">
+          <dt class="text-[var(--color-ink-faint)]">Mise en ligne technique</dt>
+          <dd class="text-[var(--color-ink)]">24h à 48h<span class="text-[var(--color-ink-faint)]">*</span></dd>
+        </div>
+        <div class="min-w-0">
+          <dt class="text-[var(--color-ink-faint)]">Performance mobile visée</dt>
+          <dd class="text-[var(--color-ink)]">Lighthouse ≥ 90</dd>
+        </div>
+        <div class="min-w-0">
+          <dt class="text-[var(--color-ink-faint)]">Réponse WhatsApp</dt>
+          <dd class="text-[var(--color-ink)]">&lt; 2h ouvrées</dd>
+        </div>
+      </dl>
+      <p class="mt-4 max-w-2xl text-xs text-[var(--color-ink-faint)]">
+        * Délai de mise en ligne technique à compter de la réception complète et validée
+        de vos contenus (textes, logo, domaine, photos). En l'absence d'un élément, le
+        délai démarre à réception du dernier élément manquant.
+      </p>
     </div>
 
-    <dl class="mt-12 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 text-sm min-[420px]:grid-cols-3">
-      <div class="min-w-0">
-        <dt class="text-[var(--color-ink-faint)]">Mise en ligne technique</dt>
-        <dd class="text-[var(--color-ink)]">24h à 48h<span class="text-[var(--color-ink-faint)]">*</span></dd>
-      </div>
-      <div class="min-w-0">
-        <dt class="text-[var(--color-ink-faint)]">Performance mobile visée</dt>
-        <dd class="text-[var(--color-ink)]">Lighthouse ≥ 90</dd>
-      </div>
-      <div class="min-w-0">
-        <dt class="text-[var(--color-ink-faint)]">Réponse WhatsApp</dt>
-        <dd class="text-[var(--color-ink)]">&lt; 2h ouvrées</dd>
-      </div>
-    </dl>
-    <p class="mt-4 max-w-2xl text-xs text-[var(--color-ink-faint)]">
-      * Délai de mise en ligne technique à compter de la réception complète et validée
-      de vos contenus (textes, logo, domaine, photos). En l'absence d'un élément, le
-      délai démarre à réception du dernier élément manquant.
-    </p>
+    <div class="mx-auto w-full max-w-[16rem] sm:max-w-xs lg:max-w-none">
+      <InteractiveRobot3D />
+    </div>
   </div>
 </section>
 

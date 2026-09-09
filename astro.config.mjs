@@ -20,7 +20,10 @@ export default defineConfig({
     prefetchAll: true,
     defaultStrategy: "hover",
   },
-  integrations: [sitemap()],
+  integrations: [
+    // La boutique privée /3d est exclue du sitemap (non indexée, non liée).
+    sitemap({ filter: (page) => !/\/3d(\/|$)/.test(page) }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

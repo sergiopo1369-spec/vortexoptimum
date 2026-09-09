@@ -1,0 +1,48 @@
+---
+/*
+  Carte produit réutilisable pour la boutique « 3D ».
+  Aucun produit réel n'est encore défini — ce composant est prêt à être
+  alimenté (titre, prix, description, visuel, lien).
+*/
+interface Props {
+  name: string;
+  price?: string;
+  description?: string;
+  image?: string;
+  href?: string;
+  placeholder?: boolean;
+}
+const { name, price, description, image, href, placeholder = false } = Astro.props;
+const Tag = href ? "a" : "div";
+---
+
+<Tag
+  {...href ? { href } : {}}
+  class="group block overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0b111c] transition-colors hover:border-cyan-400/50"
+>
+  <div class="relative aspect-[4/3] w-full bg-slate-900">
+    {
+      image ? (
+        <img src={image} alt={name} loading="lazy" decoding="async" class="h-full w-full object-cover" />
+      ) : (
+        <div
+          class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_50%_40%,rgba(34,211,238,0.18),transparent_70%)] text-xs uppercase tracking-widest text-cyan-300/60"
+        >
+          Visuel produit
+        </div>
+      )
+    }
+    {placeholder && (
+      <span class="absolute left-2 top-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+        Exemple — à remplacer
+      </span>
+    )}
+  </div>
+  <div class="p-4">
+    <div class="flex items-baseline justify-between gap-3">
+      <h3 class="text-sm font-semibold text-white">{name}</h3>
+      {price && <span class="shrink-0 text-sm font-bold text-cyan-300">{price}</span>}
+    </div>
+    {description && <p class="mt-1.5 text-xs leading-relaxed text-slate-400">{description}</p>}
+  </div>
+</Tag>

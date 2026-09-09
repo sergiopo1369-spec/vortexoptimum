@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /3d
 
 Sitemap: https://www.vortexoptim.fr/sitemap-index.xml

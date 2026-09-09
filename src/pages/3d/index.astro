@@ -1,0 +1,160 @@
+---
+/*
+  Boutique « 3D » — indépendante du site principal, non liée, non indexée.
+
+  ⚠️ Rendu statique (output: static, aucun adapter serveur) → le gate
+  ci-dessous est CLIENT-SIDE : dissuasif, pas une protection cryptographique.
+  Le HTML de cette page (structure + placeholders) reste techniquement
+  téléchargeable par qui connaît l'URL, avant vérification du mot de passe.
+  Aucune donnée sensible ne doit vivre ici tant qu'une vraie protection
+  serveur / hébergeur n'est pas en place (voir README-3D.md).
+
+  Le hash SHA-256 du mot de passe vient de la variable d'env
+  PUBLIC_SHOP_3D_HASH (jamais de mot de passe en clair dans le code).
+  Non défini → le gate refuse tout (fail-closed).
+*/
+import Layout3D from "../../layouts/Layout3D.astro";
+import Shop3DCard from "../../components/Shop3DCard.astro";
+
+const PASSWORD_HASH = (import.meta.env.PUBLIC_SHOP_3D_HASH ?? "").trim().toLowerCase();
+
+// Placeholders — AUCUN produit réel. À remplacer quand l'offre sera définie.
+const placeholders = [
+  { name: "Emplacement produit 1", price: "— €", description: "Titre, prix, description et visuel à fournir." },
+  { name: "Emplacement produit 2", price: "— €", description: "Titre, prix, description et visuel à fournir." },
+];
+---
+
+<Layout3D title="3D">
+  <!-- GATE -->
+  <section id="gate" class="mx-auto flex min-h-[100dvh] max-w-sm flex-col items-center justify-center px-6">
+    <div class="w-full rounded-2xl border border-cyan-500/25 bg-[#0b111c]/80 p-6 backdrop-blur">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Accès restreint</p>
+      <h1 class="mt-2 text-2xl font-extrabold text-white">3D</h1>
+      <p class="mt-1 text-sm text-slate-400">Espace privé. Saisissez le mot de passe pour continuer.</p>
+
+      <form id="gate-form" class="mt-5" autocomplete="off">
+        <label for="gate-pw" class="sr-only">Mot de passe</label>
+        <input
+          id="gate-pw"
+          name="pw"
+          type="password"
+          required
+          autocomplete="current-password"
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none focus-visible:border-cyan-400"
+          placeholder="Mot de passe"
+        />
+        <button
+          type="submit"
+          class="mt-3 w-full rounded-lg bg-gradient-to-r from-cyan-400 to-emerald-400 px-3 py-2.5 text-sm font-semibold text-[#04121a]"
+        >
+          Entrer
+        </button>
+        <p id="gate-msg" role="alert" class="mt-2 min-h-[1.25rem] text-center text-xs text-rose-400"></p>
+      </form>
+    </div>
+    <p class="mt-4 text-center text-[11px] leading-relaxed text-slate-600">
+      Protection dissuasive côté navigateur. Une vraie confidentialité nécessite une authentification
+      hébergeur (voir README-3D.md).
+    </p>
+  </section>
+
+  <!-- CONTENU (révélé après déverrouillage) -->
+  <main id="shop" hidden class="mx-auto max-w-5xl px-5 py-12 sm:py-16">
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Boutique privée</p>
+        <h1 class="mt-1 text-3xl font-extrabold text-white">3D</h1>
+      </div>
+      <button id="lock-btn" type="button" class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-400/50">
+        Verrouiller
+      </button>
+    </header>
+
+    <p class="mt-3 max-w-xl text-sm text-slate-400">
+      Contenu réel (produits, prix, descriptions, visuels) à fournir. La structure et la carte produit
+      sont prêtes.
+    </p>
+
+    <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {placeholders.map((p) => <Shop3DCard name={p.name} price={p.price} description={p.description} placeholder />)}
+    </div>
+  </main>
+
+  <script is:inline define:vars={{ PASSWORD_HASH }}>
+    (() => {
+      const KEY = "vx_3d_ok";
+      const gate = document.getElementById("gate");
+      const shop = document.getElementById("shop");
+      const form = document.getElementById("gate-form");
+      const input = document.getElementById("gate-pw");
+      const msg = document.getElementById("gate-msg");
+      const lockBtn = document.getElementById("lock-btn");
+
+      const unlock = () => {
+        gate.hidden = true;
+        shop.hidden = false;
+      };
+      const lock = () => {
+        try {
+          sessionStorage.removeItem(KEY);
+        } catch {}
+        shop.hidden = true;
+        gate.hidden = false;
+        input.value = "";
+      };
+
+      try {
+        if (sessionStorage.getItem(KEY) === "1") unlock();
+      } catch {}
+
+      lockBtn?.addEventListener("click", lock);
+
+      // Anti-brute-force best-effort (contournable par rechargement — friction only).
+      let fails = 0;
+      let lockedUntil = 0;
+
+      async function sha256Hex(str) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+        return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+
+        if (Date.now() < lockedUntil) {
+          msg.textContent = "Trop de tentatives. Réessayez dans une minute.";
+          return;
+        }
+        if (!PASSWORD_HASH || !window.crypto?.subtle) {
+          msg.textContent = "Accès indisponible (non configuré).";
+          return;
+        }
+
+        const digest = (await sha256Hex(input.value)).toLowerCase();
+        // Comparaison longueur constante sur des chaînes de même taille (hex 64).
+        let diff = digest.length ^ PASSWORD_HASH.length;
+        for (let i = 0; i < digest.length; i++) diff |= digest.charCodeAt(i) ^ PASSWORD_HASH.charCodeAt(i);
+
+        if (diff === 0) {
+          try {
+            sessionStorage.setItem(KEY, "1");
+          } catch {}
+          fails = 0;
+          unlock();
+        } else {
+          fails++;
+          input.value = "";
+          if (fails >= 5) {
+            lockedUntil = Date.now() + 60_000;
+            fails = 0;
+            msg.textContent = "Trop de tentatives. Réessayez dans une minute.";
+          } else {
+            msg.textContent = "Accès refusé.";
+          }
+        }
+      });
+    })();
+  </script>
+</Layout3D>

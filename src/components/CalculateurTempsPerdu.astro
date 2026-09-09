@@ -1,0 +1,364 @@
+---
+/*
+  Simulateur de pertes & diagnostic ROI.
+
+  - 6 profils sectoriels pré-paramétrés (panier moyen, taux horaire dirigeant,
+    taux de no-show, volume par défaut).
+  - 4 curseurs temps réel : volume de RDV/semaine, minutes de gestion manuelle
+    par contact, taux de no-show, taux horaire valorisé.
+  - 3 cartes résultat mises à jour instantanément (compteur animé, respect de
+    prefers-reduced-motion).
+  - CTA « Transférer mon diagnostic vers le configurateur » : scroll fluide vers
+    #configurateur-devis + mémorise le diagnostic (sessionStorage `vx_diag`).
+  - Partage : WhatsApp pré-rempli + copie du bilan.
+
+  Vanilla JS, zéro dépendance. Toute la logique de calcul vit dans le <script>
+  client ; le frontmatter ne fait que fournir les données sectorielles.
+*/
+interface Sector {
+  id: string;
+  label: string;
+  panier: number; // panier moyen €
+  taux: number; // taux horaire dirigeant €/h
+  noShow: number; // taux de no-show %
+  volume: number; // volume hebdo RDV par défaut
+}
+
+const SECTORS: Sector[] = [
+  { id: "garage", label: "Garage automobile & atelier mécanique", panier: 220, taux: 55, noShow: 12, volume: 45 },
+  { id: "btp", label: "Artisan BTP & rénovation", panier: 450, taux: 55, noShow: 8, volume: 22 },
+  { id: "beaute", label: "Salon de coiffure & institut beauté / bien-être", panier: 65, taux: 35, noShow: 15, volume: 130 },
+  { id: "resto", label: "Restauration & brasserie", panier: 42, taux: 40, noShow: 14, volume: 210 },
+  { id: "commerce", label: "Commerce spécialisé & boutique locale", panier: 95, taux: 40, noShow: 10, volume: 85 },
+  { id: "liberal", label: "Profession libérale / consultant / santé", panier: 80, taux: 60, noShow: 9, volume: 32 },
+];
+
+const BOUNDS = {
+  volume: { min: 10, max: 250, step: 5 },
+  gestion: { min: 3, max: 20, step: 1, default: 8 },
+  noShow: { min: 2, max: 30, step: 1 },
+  taux: { min: 20, max: 150, step: 5 },
+};
+
+// Pack Pro Connecté année 1 : 690 € installation + 59 €/mois × 12.
+const FORFAIT_YEAR1 = 1398;
+---
+
+<section id="calculateur-roi" class="relative scroll-mt-24 border-t border-slate-800/80 bg-slate-950/60 py-16 md:py-20">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto mb-10 max-w-2xl text-center">
+      <span
+        class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400"
+      >
+        ⏱ Diagnostic ROI — sans engagement
+      </span>
+      <h2 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+        Combien vous coûte la gestion manuelle de vos rendez-vous ?
+      </h2>
+      <p class="mt-2 text-sm text-slate-400">
+        Ajustez les curseurs à votre réalité : le manque à gagner se recalcule en direct.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+      <!-- Contrôles -->
+      <form
+        id="roi-form"
+        class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 sm:p-6"
+        aria-label="Paramètres du diagnostic"
+      >
+        <label class="block">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Votre secteur</span>
+          <select
+            id="roi-sector"
+            class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none focus-visible:border-cyan-400"
+          >
+            {SECTORS.map((s) => <option value={s.id}>{s.label}</option>)}
+          </select>
+          <span class="mt-1.5 block text-xs text-slate-500">
+            Panier moyen retenu : <strong id="roi-panier" class="text-slate-300">—</strong>
+            (ajustable via nous lors du bilan)
+          </span>
+        </label>
+
+        <div class="mt-6 space-y-5">
+          <div>
+            <div class="flex items-baseline justify-between text-sm">
+              <label for="roi-volume" class="font-medium text-slate-200">Rendez-vous / clients par semaine</label>
+              <output id="roi-volume-out" class="font-semibold text-cyan-300">—</output>
+            </div>
+            <input
+              type="range"
+              id="roi-volume"
+              min={BOUNDS.volume.min}
+              max={BOUNDS.volume.max}
+              step={BOUNDS.volume.step}
+              class="mt-2 w-full accent-cyan-400"
+            />
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between text-sm">
+              <label for="roi-gestion" class="font-medium text-slate-200">
+                Minutes de gestion manuelle par contact
+              </label>
+              <output id="roi-gestion-out" class="font-semibold text-cyan-300">—</output>
+            </div>
+            <input
+              type="range"
+              id="roi-gestion"
+              min={BOUNDS.gestion.min}
+              max={BOUNDS.gestion.max}
+              step={BOUNDS.gestion.step}
+              class="mt-2 w-full accent-cyan-400"
+            />
+            <span class="mt-1 block text-xs text-slate-500">Appels, rappels, prise de RDV, relances de devis.</span>
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between text-sm">
+              <label for="roi-noshow" class="font-medium text-slate-200">Taux de rendez-vous manqués (no-shows)</label>
+              <output id="roi-noshow-out" class="font-semibold text-cyan-300">—</output>
+            </div>
+            <input
+              type="range"
+              id="roi-noshow"
+              min={BOUNDS.noShow.min}
+              max={BOUNDS.noShow.max}
+              step={BOUNDS.noShow.step}
+              class="mt-2 w-full accent-cyan-400"
+            />
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between text-sm">
+              <label for="roi-taux" class="font-medium text-slate-200">Taux horaire valorisé du dirigeant</label>
+              <output id="roi-taux-out" class="font-semibold text-cyan-300">—</output>
+            </div>
+            <input
+              type="range"
+              id="roi-taux"
+              min={BOUNDS.taux.min}
+              max={BOUNDS.taux.max}
+              step={BOUNDS.taux.step}
+              class="mt-2 w-full accent-cyan-400"
+            />
+          </div>
+        </div>
+      </form>
+
+      <!-- Résultats -->
+      <div class="space-y-4">
+        <article class="rounded-2xl border border-cyan-500/30 bg-[#080c14] p-5 shadow-[0_0_30px_rgba(0,229,255,0.10)]">
+          <p class="text-xs font-semibold uppercase tracking-wide text-cyan-400">Heures dirigeant gaspillées</p>
+          <p class="mt-1.5 text-3xl font-extrabold text-white">
+            <span id="roi-hours">—</span> <span class="text-lg font-semibold text-slate-400">h / mois</span>
+          </p>
+          <p class="mt-1 text-sm text-slate-400">≈ <span id="roi-days">—</span> journées complètes de travail.</p>
+        </article>
+
+        <article class="rounded-2xl border border-cyan-500/30 bg-[#080c14] p-5 shadow-[0_0_30px_rgba(0,229,255,0.10)]">
+          <p class="text-xs font-semibold uppercase tracking-wide text-cyan-400">Manque à gagner total</p>
+          <p class="mt-1.5 text-3xl font-extrabold text-white">
+            <span id="roi-loss">—</span> <span class="text-lg font-semibold text-slate-400">€ / an</span>
+          </p>
+          <dl class="mt-2 space-y-0.5 text-sm text-slate-400">
+            <div class="flex justify-between"><dt>Rendez-vous manqués</dt><dd id="roi-loss-noshow" class="text-slate-300">—</dd></div>
+            <div class="flex justify-between"><dt>Coût du temps administratif</dt><dd id="roi-loss-admin" class="text-slate-300">—</dd></div>
+          </dl>
+        </article>
+
+        <article class="rounded-2xl border border-emerald-400/30 bg-[#080c14] p-5 shadow-[0_0_30px_rgba(52,211,153,0.10)]">
+          <p class="text-xs font-semibold uppercase tracking-wide text-emerald-300">Gain net estimé avec Vortex Optim</p>
+          <p class="mt-1.5 text-3xl font-extrabold text-white">
+            <span id="roi-gain">—</span> <span class="text-lg font-semibold text-slate-400">€ / an</span>
+          </p>
+          <p class="mt-1 text-sm text-slate-400">
+            ROI estimé ≈ <span id="roi-ratio" class="font-semibold text-emerald-300">—</span>
+          </p>
+          <p class="mt-2 text-xs leading-relaxed text-slate-500">
+            Récupération de 80 % des no-shows (rappels WhatsApp / SMS) + automatisation de 85 % du temps de
+            prise de RDV, net du forfait Pro Connecté (1 398 € la première année).
+          </p>
+        </article>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            id="roi-transfer"
+            class="btn btn-primary flex-1 text-sm"
+          >
+            Transférer mon diagnostic vers le devis
+          </button>
+          <button
+            type="button"
+            id="roi-share"
+            class="btn btn-ghost text-sm"
+            title="Partager le bilan sur WhatsApp"
+          >
+            Partager le bilan
+          </button>
+        </div>
+        <p class="text-center text-xs text-slate-500">
+          Estimation basée sur la moyenne d'activité de votre secteur à Reims. Bilan détaillé et gratuit sur demande.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script
+    is:inline
+    type="application/json"
+    id="roi-sectors"
+    set:html={JSON.stringify({ sectors: SECTORS, bounds: BOUNDS, forfait: FORFAIT_YEAR1 })}
+  />
+</section>
+
+<script>
+  type Sector = { id: string; label: string; panier: number; taux: number; noShow: number; volume: number };
+  type Cfg = {
+    sectors: Sector[];
+    bounds: Record<"volume" | "gestion" | "noShow" | "taux", { min: number; max: number; step: number; default?: number }>;
+    forfait: number;
+  };
+
+  const raw = document.getElementById("roi-sectors")?.textContent;
+  const form = document.getElementById("roi-form");
+  if (raw && form) {
+    const cfg: Cfg = JSON.parse(raw);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const sectorSel = $<HTMLSelectElement>("roi-sector");
+    const volume = $<HTMLInputElement>("roi-volume");
+    const gestion = $<HTMLInputElement>("roi-gestion");
+    const noshow = $<HTMLInputElement>("roi-noshow");
+    const taux = $<HTMLInputElement>("roi-taux");
+
+    const eur0 = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+    const num0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+    const num1 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
+
+    const WEEKS_MONTH = 4.33;
+    const WEEKS_YEAR = 52;
+    const HOURS_PER_DAY = 7;
+
+    /** Compteur animé (ease-out ~600 ms), instantané si prefers-reduced-motion. */
+    const animators = new WeakMap<HTMLElement, number>();
+    function setNumber(el: HTMLElement, value: number, fmt: (n: number) => string) {
+      const prev = Number(el.dataset.v ?? "0");
+      el.dataset.v = String(value);
+      if (reduced || Math.abs(value - prev) < 1) {
+        el.textContent = fmt(value);
+        return;
+      }
+      const start = performance.now();
+      const dur = 600;
+      const id = animators.get(el);
+      if (id) cancelAnimationFrame(id);
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / dur);
+        const e = 1 - Math.pow(1 - t, 3);
+        el.textContent = fmt(prev + (value - prev) * e);
+        if (t < 1) animators.set(el, requestAnimationFrame(step));
+      };
+      animators.set(el, requestAnimationFrame(step));
+    }
+
+    function currentSector(): Sector {
+      return cfg.sectors.find((s) => s.id === sectorSel.value) ?? cfg.sectors[0];
+    }
+
+    function applySector(s: Sector) {
+      volume.value = String(s.volume);
+      gestion.value = String(cfg.bounds.gestion.default ?? 8);
+      noshow.value = String(s.noShow);
+      taux.value = String(s.taux);
+    }
+
+    function compute() {
+      const s = currentSector();
+      const v = Number(volume.value);
+      const g = Number(gestion.value);
+      const ns = Number(noshow.value) / 100;
+      const rate = Number(taux.value);
+
+      const heuresMois = (v * g * WEEKS_MONTH) / 60;
+      const heuresAn = (v * g * WEEKS_YEAR) / 60;
+      const journees = heuresMois / HOURS_PER_DAY;
+
+      const perteNoShow = v * WEEKS_YEAR * ns * s.panier;
+      const coutAdmin = heuresAn * rate;
+      const manque = perteNoShow + coutAdmin;
+
+      const gainBrut = 0.8 * perteNoShow + 0.85 * coutAdmin;
+      const gainNet = gainBrut - cfg.forfait;
+      const roi = cfg.forfait > 0 ? gainBrut / cfg.forfait : 0;
+
+      // curseurs — libellés
+      $("roi-panier").textContent = eur0.format(s.panier);
+      $("roi-volume-out").textContent = num0.format(v);
+      $("roi-gestion-out").textContent = g + " min";
+      $("roi-noshow-out").textContent = noshow.value + " %";
+      $("roi-taux-out").textContent = eur0.format(rate) + "/h";
+
+      // cartes
+      setNumber($("roi-hours"), heuresMois, (n) => num0.format(n));
+      $("roi-days").textContent = num1.format(journees);
+      setNumber($("roi-loss"), manque, (n) => num0.format(n));
+      $("roi-loss-noshow").textContent = eur0.format(perteNoShow);
+      $("roi-loss-admin").textContent = eur0.format(coutAdmin);
+      setNumber($("roi-gain"), Math.max(0, gainNet), (n) => num0.format(n));
+      $("roi-ratio").textContent = "×" + num1.format(roi);
+
+      return { s, v, g, noshow: Number(noshow.value), rate, heuresMois, manque, gainNet, roi };
+    }
+
+    function snapshot() {
+      const r = compute();
+      return (
+        `Diagnostic ROI Vortex Optim — ${r.s.label}\n` +
+        `• ${num0.format(r.heuresMois)} h/mois en gestion manuelle\n` +
+        `• Manque à gagner : ${eur0.format(r.manque)} / an\n` +
+        `• Gain net estimé avec l'écosystème : ${eur0.format(Math.max(0, r.gainNet))} / an (ROI ×${num1.format(r.roi)})\n` +
+        `Paramètres : ${num0.format(r.v)} RDV/sem · ${r.g} min/contact · ${r.noshow}% no-show · ${eur0.format(r.rate)}/h`
+      );
+    }
+
+    sectorSel.addEventListener("change", () => {
+      applySector(currentSector());
+      compute();
+    });
+    [volume, gestion, noshow, taux].forEach((el) => el.addEventListener("input", compute));
+
+    $("roi-transfer").addEventListener("click", () => {
+      const r = compute();
+      try {
+        sessionStorage.setItem(
+          "vx_diag",
+          JSON.stringify({ sector: r.s.id, sectorLabel: r.s.label, volume: r.v, gestion: r.g, noShow: r.noshow, tauxHoraire: r.rate }),
+        );
+      } catch {
+        /* stockage indisponible : on scrolle quand même */
+      }
+      const target = document.getElementById("configurateur-devis");
+      if (target) target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      else location.href = "/#configurateur-devis";
+    });
+
+    $("roi-share").addEventListener("click", async () => {
+      const text = snapshot();
+      const wa = "https://wa.me/33758187675?text=" + encodeURIComponent(text);
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        /* clipboard indisponible */
+      }
+      window.open(wa, "_blank", "noopener");
+    });
+
+    // init
+    applySector(currentSector());
+    compute();
+  }
+</script>

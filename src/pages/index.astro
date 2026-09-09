@@ -4,6 +4,7 @@ import Hero from "../components/Hero.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import PackCard from "../components/PackCard.astro";
 import QuoteCalculator from "../components/QuoteCalculator.astro";
+import CalculateurTempsPerdu from "../components/CalculateurTempsPerdu.astro";
 import ContactChannels from "../components/ContactChannels.astro";
 import { PACKS } from "../config/pricing";
 import { SITE } from "../config/site";
@@ -66,6 +67,9 @@ const steps = [
       </div>
     </div>
   </section>
+
+  <!-- Simulateur de pertes & diagnostic ROI -->
+  <CalculateurTempsPerdu />
 
   <!-- Modèle transparent : forfait mensuel tout compris -->
   <section
@@ -137,9 +141,9 @@ const steps = [
 
   <!-- Packs -->
   <section id="offres" class="container-page py-20">
-    <SectionHeading eyebrow="Offres" title="Deux packs clé en main, sans engagement" lead="L'abonnement mensuel couvre l'hébergement, les mises à jour de sécurité et le support. Résiliable avec 30 jours de préavis." />
-    <div class="mt-12 grid gap-6 lg:grid-cols-2">
-      {PACKS.map((p) => <PackCard pack={p} featured={p.id === "pro"} />)}
+    <SectionHeading eyebrow="Offres" title="Trois formules clé en main, sans engagement" lead="L'abonnement mensuel couvre l'hébergement, les mises à jour de sécurité et le support. Résiliable avec 30 jours de préavis." />
+    <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {PACKS.map((p) => <PackCard pack={p} />)}
     </div>
     <p class="mt-6 text-center text-sm text-[var(--color-ink-muted)]">
       Besoin d'une boutique, d'un module devis-photo, d'un assistant IA ou de publicité locale ?
@@ -148,7 +152,7 @@ const steps = [
   </section>
 
   <!-- Calculateur -->
-  <section class="container-page py-20">
+  <section id="configurateur-devis" class="container-page scroll-mt-24 py-20">
     <SectionHeading eyebrow="Devis en ligne" title="Estimez votre projet en une minute" lead="Un total transparent, recalculé à chaque clic, envoyé sur WhatsApp ou par e-mail. Sans inscription." />
     <div class="mx-auto mt-12 max-w-3xl">
       <QuoteCalculator />

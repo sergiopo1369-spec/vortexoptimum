@@ -14,7 +14,8 @@
     "astro": "astro",
     "media": "node scripts/prepare-media.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "media:bg": "node scripts/make-hero-bg.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -27,6 +28,7 @@
     "@tailwindcss/vite": "^4.1.0",
     "@types/three": "^0.180.0",
     "ffmpeg-static": "^5.2.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.0",
     "vitest": "^2.1.0"
   },

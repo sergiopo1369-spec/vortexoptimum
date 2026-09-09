@@ -9,36 +9,35 @@ export interface Props {
 }
 const { eyebrow = "Reims & Grand Est", title, subtitle } = Astro.props;
 
-// Média généré par `npm run media` (voir scripts/prepare-media.mjs).
-// Le poster s'affiche immédiatement ; la vidéo est chargée APRÈS le load
-// et ne participe jamais au LCP (§6.2).
-const POSTER = "/media/hero-poster.jpg";
-const VIDEO_MP4 = "/media/hero.mp4";
-const VIDEO_WEBM = "/media/hero.webm";
+// Texture de fond générée par `npm run media:bg` (scripts/make-hero-bg.mjs) :
+// dégradé vectoriel rendu en 2560/1280/640 px, net à toutes les tailles.
+// Purement décorative (alt="") → jamais candidate au LCP (§6.2).
+const BG_2560 = "/media/hero-bg-2560.webp";
+const BG_1280 = "/media/hero-bg-1280.webp";
+const BG_640 = "/media/hero-bg-640.webp";
 ---
 
 <section class="relative isolate overflow-hidden">
-  <!-- Fond : poster (immédiat) puis vidéo différée. Jamais dans le LCP. -->
-  <div class="absolute inset-0 z-0" aria-hidden="true">
-    <img
-      src={POSTER}
-      alt=""
-      class="h-full w-full object-cover"
-      fetchpriority="low"
-      decoding="async"
-    />
-    <video
-      id="hero-video"
-      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
-      muted
-      loop
-      playsinline
-      preload="none"
-      poster={POSTER}
-      tabindex="-1"
-      data-mp4={VIDEO_MP4}
-      data-webm={VIDEO_WEBM}
-    ></video>
+  <!--
+    Calque de fond isolé. `[data-hero-bg-layer]` est le seul élément à
+    transformer pour un futur effet (parallaxe souris / scroll) : il est déjà
+    légèrement sur-dimensionné (scale 1.06) pour laisser de la marge de
+    translation sans découvrir les bords. Aucun JS ici pour l'instant.
+  -->
+  <div class="absolute inset-0 z-0" data-hero-bg aria-hidden="true">
+    <div class="hero-bg-layer absolute inset-0" data-hero-bg-layer>
+      <img
+        src={BG_1280}
+        srcset={`${BG_640} 640w, ${BG_1280} 1280w, ${BG_2560} 2560w`}
+        sizes="100vw"
+        width="2560"
+        height="1440"
+        alt=""
+        class="h-full w-full object-cover"
+        fetchpriority="low"
+        decoding="async"
+      />
+    </div>
     <!-- Scrim : léger en haut, dense en bas pour protéger le contraste du texte (WCAG AA). -->
     <div
       class="absolute inset-0"
@@ -97,41 +96,22 @@ const VIDEO_WEBM = "/media/hero.webm";
   </div>
 </section>
 
-<script>
-  const video = document.getElementById("hero-video") as HTMLVideoElement | null;
-  if (video) {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const conn = (navigator as any).connection;
-    const saveData = conn?.saveData === true;
-    const slow = conn && /2g/.test(conn.effectiveType ?? "");
-
-    if (!prefersReduced && !saveData && !slow) {
-      const load = () => {
-        const webm = video.dataset.webm;
-        const mp4 = video.dataset.mp4;
-        const add = (src: string, type: string) => {
-          const s = document.createElement("source");
-          s.src = src;
-          s.type = type;
-          video.appendChild(s);
-        };
-        if (webm) add(webm, "video/webm");
-        if (mp4) add(mp4, "video/mp4");
-        video.load();
-        video.play().then(
-          () => video.classList.replace("opacity-0", "opacity-100"),
-          () => {
-            /* lecture refusée : on garde le poster, dégradation gracieuse */
-          },
-        );
-      };
-      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void })
-        .requestIdleCallback;
-      if (typeof ric === "function") {
-        ric(load, { timeout: 3000 });
-      } else {
-        window.addEventListener("load", () => window.setTimeout(load, 800), { once: true });
-      }
+<style>
+  /*
+    Calque de fond du Héro. Légèrement sur-dimensionné : marge de translation
+    disponible pour un futur effet (parallaxe souris / scroll) sans découvrir
+    les bords. `will-change` prépare la couche de composition ; aucune
+    animation ni JS à ce stade.
+  */
+  .hero-bg-layer {
+    transform: scale(1.06);
+    transform-origin: center;
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bg-layer {
+      transform: none;
+      will-change: auto;
     }
   }
-</script>
+</style>

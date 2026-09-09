@@ -43,7 +43,12 @@ const jsonLd = {
     </div>
 
     <div class="mx-auto mt-8 max-w-3xl">
-      <PostCover cover={post.data.cover} concept={post.data.imageConcept} />
+      <PostCover
+        cover={post.data.cover}
+        concept={post.data.imageConcept}
+        video={post.data.headerVideo}
+        poster={post.data.headerPoster}
+      />
     </div>
 
     <div class="prose-vx mx-auto mt-10 max-w-2xl">

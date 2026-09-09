@@ -67,6 +67,74 @@ const steps = [
     </div>
   </section>
 
+  <!-- Modèle transparent : forfait mensuel tout compris -->
+  <section
+    id="modele-transparent"
+    class="relative scroll-mt-24 border-t border-slate-800/80 bg-slate-950/60 py-12 md:py-16"
+  >
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <!-- En-tête compact -->
+      <div class="mx-auto mb-8 max-w-2xl text-center">
+        <span
+          class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400"
+        >
+          ⚡ Transparence &amp; Sérénité
+        </span>
+        <h2 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+          Pourquoi un forfait mensuel tout compris ?
+        </h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Un investissement prévisible, zéro frais caché, une IA continuellement opérationnelle.
+        </p>
+      </div>
+
+      <!-- Grille 2 colonnes compacte — mobile : texte d'abord, vidéo ensuite (order-2) -->
+      <div class="grid grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-8">
+        <!-- Colonne Vidéo (5 cols) -->
+        <div class="order-2 flex justify-center lg:order-1 lg:col-span-5">
+          <div
+            class="relative mx-auto w-full max-w-md rounded-2xl border border-cyan-500/30 bg-[#080c14] p-2 shadow-[0_0_30px_rgba(0,229,255,0.12)]"
+          >
+            <video
+              controls
+              preload="metadata"
+              playsinline
+              poster="/videosblog/pourquoi-forfait-ia-poster.jpg"
+              aria-label="Pourquoi choisir le forfait IA Vortex Optim"
+              class="block aspect-video h-auto w-full rounded-xl bg-slate-900 object-cover"
+            >
+              <source src="/videosblog/pourquoi-forfait-ia.mp4" type="video/mp4" />
+              <p class="p-2 text-center text-xs text-slate-400">
+                Vidéo non supportée.
+                <a href="/videosblog/pourquoi-forfait-ia.mp4" target="_blank" class="text-cyan-400 underline">Ouvrir le fichier</a>.
+              </p>
+            </video>
+          </div>
+        </div>
+
+        <!-- Colonne 4 Piliers condensés (7 cols) -->
+        <div class="order-1 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:order-2 lg:col-span-7">
+          {
+            [
+              ["01.", "Consommation IA incluse", "Coûts API, tokens IA et passerelles WhatsApp / SMS pris en charge sans surcoût imprévu."],
+              ["02.", "Hébergement & Sécurité", "Serveurs ultra-rapides, certificats SSL, sauvegardes régulières et conformité RGPD."],
+              ["03.", "Maintien & Synchronisation", "Surveillance 24/7 des flux de données, des agendas et des déclencheurs d'automatisation."],
+              ["04.", "Proximité Reims & Déplacement", "Intervention locale et présence physique dans votre entreprise pour ajuster les process."],
+            ].map(([n, t, d]) => (
+              <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-3.5 transition-colors hover:border-cyan-500/30">
+                <div class="mb-1.5 flex items-center gap-2.5">
+                  <span class="text-base font-bold text-cyan-400">{n}</span>
+                  <h3 class="text-sm font-semibold text-white">{t}</h3>
+                </div>
+                <p class="text-xs leading-relaxed text-slate-400">{d}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Packs -->
   <section id="offres" class="container-page py-20">
     <SectionHeading eyebrow="Offres" title="Deux packs clé en main, sans engagement" lead="L'abonnement mensuel couvre l'hébergement, les mises à jour de sécurité et le support. Résiliable avec 30 jours de préavis." />

@@ -1,15 +1,22 @@
 ---
 /*
-  Couverture d'article générée (dégradé + concept visuel en légende).
-  L'image conceptuelle finale (§10) est à produire ; ce composant tient lieu
-  de placeholder léger et cohérent avec la direction artistique.
+  Couverture d'article.
+  - Si `video` est fourni (page article), lecteur natif <video> dans un habillage
+    néon cyan : fichier statique servi depuis /videosblog/, `preload="none"`
+    (aucun octet chargé avant le clic), affiche via `poster`, repli <a> direct.
+  - Sinon si `poster` est fourni (liste du blog), miniature <img> + pastille lecture.
+  - Sinon, couverture dégradée générée à partir de `cover` (placeholder §10).
 */
 export interface Props {
   cover: "cyan" | "amethyst" | "emerald" | "aurora";
   concept: string;
   compact?: boolean;
+  /** Chemin absolu de la vidéo, ex: "/videosblog/google-ads-local.mp4". */
+  video?: string;
+  /** Chemin absolu de l'affiche, ex: "/videosblog/google-ads-local.jpg". */
+  poster?: string;
 }
-const { cover, concept, compact = false } = Astro.props;
+const { cover, concept, compact = false, video, poster } = Astro.props;
 
 const gradients: Record<Props["cover"], string> = {
   cyan: "radial-gradient(120% 120% at 0% 0%, #22d3ee55, transparent 60%), radial-gradient(120% 120% at 100% 100%, #0ea5b755, transparent 55%), #0c111c",
@@ -22,19 +29,45 @@ const gradients: Record<Props["cover"], string> = {
 };
 ---
 
-<div
-  class:list={[
-    "relative w-full overflow-hidden rounded-xl border border-[var(--color-border)]",
-    compact ? "aspect-[16/9]" : "aspect-[2/1]",
-  ]}
-  style={`background: ${gradients[cover]};`}
-  role="img"
-  aria-label={`Illustration conceptuelle : ${concept}`}
->
-  <div class="absolute inset-0 opacity-40 mix-blend-overlay" style="background-image: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,255,255,.05) 22px 23px);"></div>
-  {!compact && (
-    <p class="absolute bottom-3 left-4 right-4 text-xs text-[var(--color-ink-faint)]">
-      Concept visuel : {concept}
-    </p>
-  )}
-</div>
+{
+  video ? (
+    <div class="relative w-full rounded-xl border border-cyan-500/30 bg-[#080c14] p-1.5 shadow-[0_0_20px_rgba(0,229,255,0.10)]">
+      <video
+        controls
+        preload="none"
+        playsinline
+        poster={poster}
+        aria-label={`Vidéo : ${concept}`}
+        class="block aspect-video h-auto w-full rounded-lg bg-slate-900 object-cover"
+      >
+        <source src={video} type="video/mp4" />
+        <p class="p-2 text-center text-xs text-slate-400">
+          Vidéo non supportée.{" "}
+          <a href={video} target="_blank" class="text-cyan-400 underline">Ouvrir le fichier</a>.
+        </p>
+      </video>
+    </div>
+  ) : poster ? (
+    <div class="relative w-full aspect-video overflow-hidden rounded-xl border border-[var(--color-border)] bg-[#080c14]">
+      <img src={poster} alt={`Miniature de la vidéo : ${concept}`} loading="lazy" decoding="async" class="h-full w-full object-cover" />
+      <span class="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs text-[var(--color-cyan-text)] backdrop-blur-sm">
+        ▶ Vidéo
+      </span>
+    </div>
+  ) : (
+    <div
+      class:list={[
+        "relative w-full overflow-hidden rounded-xl border border-[var(--color-border)]",
+        compact ? "aspect-[16/9]" : "aspect-[2/1]",
+      ]}
+      style={`background: ${gradients[cover]};`}
+      role="img"
+      aria-label={`Illustration conceptuelle : ${concept}`}
+    >
+      <div class="absolute inset-0 opacity-40 mix-blend-overlay" style="background-image: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,255,255,.05) 22px 23px);" />
+      {!compact && (
+        <p class="absolute bottom-3 left-4 right-4 text-xs text-[var(--color-ink-faint)]">Concept visuel : {concept}</p>
+      )}
+    </div>
+  )
+}

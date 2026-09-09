@@ -28,7 +28,7 @@ const df = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
         posts.map((post) => (
           <li>
             <a href={`/blog/${post.id}`} class="glass block h-full overflow-hidden p-4 transition-colors hover:glass-strong">
-              <PostCover cover={post.data.cover} concept={post.data.imageConcept} compact />
+              <PostCover cover={post.data.cover} concept={post.data.imageConcept} poster={post.data.headerPoster} compact />
               <div class="p-2">
                 <p class="mt-4 text-xs text-[var(--color-ink-faint)]">
                   <time datetime={post.data.pubDate.toISOString()}>{df.format(post.data.pubDate)}</time>

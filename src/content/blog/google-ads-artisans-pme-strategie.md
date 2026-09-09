@@ -4,6 +4,8 @@ description: "Pourquoi la majorité des commerces gaspillent leur budget publici
 pubDate: 2026-06-17
 imageConcept: "Panneau d'artisan illuminé par un laser doré dans une ruelle sombre"
 cover: "amethyst"
+headerVideo: "/videosblog/google-ads-local.mp4"
+headerPoster: "/videosblog/google-ads-local.jpg"
 tags: ["Google Ads", "acquisition locale", "Reims"]
 ---
 

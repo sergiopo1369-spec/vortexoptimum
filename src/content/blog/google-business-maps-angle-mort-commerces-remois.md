@@ -4,6 +4,8 @@ description: "Analyse des opportunités que les commerces de Reims laissent pass
 pubDate: 2026-07-01
 imageConcept: "Carte holographique 3D de Reims avec repères lumineux"
 cover: "cyan"
+headerVideo: "/videosblog/google-business-reims.mp4"
+headerPoster: "/videosblog/google-business-reims.jpg"
 tags: ["Google Business Profile", "SEO local", "Reims"]
 ---
 

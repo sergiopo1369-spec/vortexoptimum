@@ -4,6 +4,8 @@ description: "Traitement des signaux interstellaires, navigation autonome des ro
 pubDate: 2026-07-29
 imageConcept: "Télescope en orbite pointé vers une nébuleuse, maillé de réseaux neuronaux"
 cover: "aurora"
+headerVideo: "/videosblog/ia-espace.mp4"
+headerPoster: "/videosblog/ia-espace.jpg"
 tags: ["IA", "ingénierie", "prospective"]
 ---
 

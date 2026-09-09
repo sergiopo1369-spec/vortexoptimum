@@ -4,6 +4,8 @@ description: "Comment les rappels intelligents et un assistant WhatsApp libèren
 pubDate: 2026-07-15
 imageConcept: "Vitrine rémoise traversée par des flux de lumière interconnectés"
 cover: "emerald"
+headerVideo: "/videosblog/automatisation-garages.mp4"
+headerPoster: "/videosblog/automatisation-garages.jpg"
 tags: ["IA", "prise de rendez-vous", "no-shows"]
 ---
 

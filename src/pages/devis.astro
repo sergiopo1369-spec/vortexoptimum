@@ -21,6 +21,19 @@ import ContactChannels from "../components/ContactChannels.astro";
       </p>
     </div>
 
+    <div
+      id="video-roi"
+      class="relative z-10 mx-auto my-6 w-full max-w-3xl scroll-mt-24 rounded-2xl border border-cyan-500/30 bg-slate-950 p-2 shadow-2xl"
+    >
+      <video controls playsinline preload="metadata" class="block h-auto w-full rounded-xl">
+        <source src="/videosblog/publicite-ia-roi.mp4" type="video/mp4" />
+        <p class="p-4 text-center text-sm text-slate-400">
+          Votre navigateur ne parvient pas à lire la vidéo.
+          <a href="/videosblog/publicite-ia-roi.mp4" target="_blank" class="text-cyan-400 underline">Cliquez ici pour l'ouvrir directement</a>.
+        </p>
+      </video>
+    </div>
+
     <div class="mx-auto mt-10 max-w-3xl">
       <QuoteCalculator />
     </div>

@@ -1,6 +1,5 @@
 /*
-  Toile neuronale interactive - effet de particules connectées
-  Réactif au mouvement de la souris, optimisé pour les performances
+  Toile neuronale simple - effet léger pour éviter les problèmes de layout
 */
 
 interface Particle {
@@ -14,79 +13,48 @@ export class NeuralNetwork {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private particles: Particle[] = [];
-  private mouse = { x: 0, y: 0 };
   private animationId: number | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    this.ctx = ctx;
     this.init();
-    this.bindEvents();
     this.animate();
   }
 
   private init(): void {
-    this.resize();
+    // Taille fixe pour éviter problèmes de resize
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
     this.createParticles();
-  }
-
-  private resize(): void {
-    const rect = this.canvas.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
   }
 
   private createParticles(): void {
     this.particles = [];
-    const rect = this.canvas.getBoundingClientRect();
-    
-    for (let i = 0; i < 40; i++) {
+    // Réduire le nombre de particules pour performance
+    for (let i = 0; i < 25; i++) {
       this.particles.push({
-        x: Math.random() * rect.width,
-        y: Math.random() * rect.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3
       });
     }
   }
 
-  private bindEvents(): void {
-    window.addEventListener('mousemove', (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      this.mouse.x = e.clientX - rect.left;
-      this.mouse.y = e.clientY - rect.top;
-    });
-
-    window.addEventListener('resize', () => {
-      this.resize();
-      this.createParticles();
-    });
-  }
-
   private updateParticles(): void {
-    const rect = this.canvas.getBoundingClientRect();
-    
     this.particles.forEach(particle => {
       particle.x += particle.vx;
       particle.y += particle.vy;
 
-      // Attraction vers la souris
-      const dx = this.mouse.x - particle.x;
-      const dy = this.mouse.y - particle.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      // Rebonds simples
+      if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+      if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
       
-      if (distance < 100) {
-        const force = (100 - distance) / 100;
-        particle.x += dx * force * 0.01;
-        particle.y += dy * force * 0.01;
-      }
-
-      // Rebonds
-      if (particle.x < 0 || particle.x > rect.width) particle.vx *= -1;
-      if (particle.y < 0 || particle.y > rect.height) particle.vy *= -1;
-      
-      particle.x = Math.max(0, Math.min(rect.width, particle.x));
-      particle.y = Math.max(0, Math.min(rect.height, particle.y));
+      particle.x = Math.max(0, Math.min(this.canvas.width, particle.x));
+      particle.y = Math.max(0, Math.min(this.canvas.height, particle.y));
     });
   }
 
@@ -137,14 +105,10 @@ export class NeuralNetwork {
   }
 }
 
-// Initialisation
+// Initialisation simplifiée
 export function initNeuralNetwork(): void {
-  const container = document.getElementById('neural-network');
-  if (!container) return;
-
-  const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none';
-  container.appendChild(canvas);
+  const canvas = document.getElementById('neural-network-canvas') as HTMLCanvasElement;
+  if (!canvas) return;
 
   const isDesktop = window.innerWidth >= 1024;
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

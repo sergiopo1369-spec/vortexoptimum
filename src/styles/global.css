@@ -284,91 +284,26 @@
     no-repeat;
 }
 
-/* Toile neuronale interactive */
-#neural-network {
-  opacity: 0.4;
-  pointer-events: none;
-}
 
-#neural-network canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
 
-/* Optimisations pour la sphère 3D */
+/* Sphère 3D responsive */
 .ir3d {
-  /* Taille agrandie comme demandé */
-  max-width: 36rem !important;
+  max-width: 36rem;
 }
 
-/* Responsive mobile - Hero section */
+/* Mobile responsive */
 @media (max-width: 768px) {
-  /* Hero responsive fixes */
-  .container-page {
-    padding-inline: 1rem;
-  }
-  
-  /* Désactiver les effets lourds sur mobile */
-  #neural-network {
-    display: none;
-  }
-  
   .ir3d {
-    max-width: 20rem !important;
+    max-width: 20rem;
   }
   
-  /* Optimiser les grilles pour mobile */
-  .grid {
-    gap: 1rem;
-  }
-  
-  /* Améliorer la lisibilité du texte */
   h1 {
-    font-size: 2.5rem !important;
-    line-height: 1.2;
+    font-size: 2.5rem;
   }
   
-  .text-lg {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  /* Très petits écrans */
-  h1 {
-    font-size: 2rem !important;
-  }
-  
+  /* Boutons tactiles optimisés */
   .btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .flex-wrap {
-    flex-direction: column;
-  }
-  
-  /* Navigation mobile améliorée */
-  .container-page {
-    padding-inline: 0.75rem;
-  }
-}
-
-/* Optimisations spécifiques pour le header mobile */
-@media (max-width: 768px) {
-  header .container-page {
-    padding-inline: 1rem;
-  }
-  
-  /* Menu mobile plus accessible */
-  details[open] summary {
-    background: var(--color-surface-strong);
-  }
-  
-  /* Améliorer les zones de tap sur mobile */
-  nav a, .btn {
     min-height: 44px;
-    display: flex;
-    align-items: center;
+    padding: 12px 20px;
   }
 }

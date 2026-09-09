@@ -4,9 +4,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SectionHeading from "../../components/SectionHeading.astro";
 import PostCover from "../../components/PostCover.astro";
 
-const posts = (await getCollection("blog", ({ data }) => import.meta.env.PROD ? !data.draft : true)).sort(
-  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-);
+// Tri à deux niveaux :
+//   1. les articles avec vidéo d'en-tête (`headerVideo`) passent devant ;
+//   2. au sein de chaque groupe, du plus récent au plus ancien (`pubDate`).
+// Aucun champ de priorité manuel n'existe dans le schéma → la date fait foi.
+const posts = (await getCollection("blog", ({ data }) => (import.meta.env.PROD ? !data.draft : true))).sort((a, b) => {
+  const aHasVideo = Boolean(a.data.headerVideo);
+  const bHasVideo = Boolean(b.data.headerVideo);
+  if (aHasVideo !== bHasVideo) return aHasVideo ? -1 : 1;
+  return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+});
 
 const df = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
 ---

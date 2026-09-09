@@ -1,13 +1,14 @@
 # Sources de travail et fichiers lourds non servis par le site.
-# public/ est livré tel quel par Astro ; tout ce qui est listé ici reste local.
-.embed/
-artifact/
-assets/
-assets-src/
-docs/
-tests/
-scripts/
-*.mhtml
-LOGO.jpg
-logovortex123.png
-*_1080p.mp4
+# Motifs ancrés à la racine (/) : sans le slash initial, "scripts/" exclurait
+# aussi src/scripts/ et casserait le build.
+/.embed/
+/artifact/
+/assets/
+/assets-src/
+/docs/
+/tests/
+/scripts/
+/*.mhtml
+/LOGO.jpg
+/logovortex123.png
+/*_1080p.mp4

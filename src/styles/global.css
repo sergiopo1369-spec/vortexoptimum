@@ -42,14 +42,16 @@
 
   html {
     scroll-behavior: smooth;
-    background-color: var(--color-bg);
+    /* Fond sombre officiel #080C14 (§5.3) : valeur littérale, le rendu du site ne
+       dépend jamais d'une surcharge ultérieure de --color-bg. */
+    background-color: #080c14;
     /* Filet de sécurité : aucun débordement horizontal ne doit provoquer de scroll
        latéral (clip ne casse pas position: sticky, contrairement à hidden). */
     overflow-x: clip;
   }
 
   body {
-    background-color: var(--color-bg);
+    background-color: var(--color-bg, #080c14);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -215,14 +217,35 @@
   }
 }
 
-/* Halo d'ambiance discret, sans coût de rendu vidéo */
+/*
+  Arrière-plan global — maillage cyber + dégradé radial néon cyan #00e5ff,
+  par-dessus le fond sombre officiel #080c14 (html/body).
+  Purement décoratif : z-index: -1 + pointer-events: none → ce calque ne
+  bloque jamais le clic, le survol ni le focus (accessibilité clavier).
+*/
 .ambient {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60rem 60rem at 12% -10%, color-mix(in oklab, var(--color-cyan) 12%, transparent), transparent 60%),
-    radial-gradient(50rem 50rem at 100% 0%, color-mix(in oklab, var(--color-amethyst) 10%, transparent), transparent 55%),
-    radial-gradient(40rem 40rem at 50% 120%, color-mix(in oklab, var(--color-emerald) 8%, transparent), transparent 60%);
+    /* maillage cyber (grille 3,5 rem, lignes néon cyan) */
+    linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+    /* dégradé radial néon cyan #00e5ff + halos améthyste / émeraude */
+    radial-gradient(58rem 58rem at 10% -10%, rgba(0, 229, 255, 0.18), transparent 62%),
+    radial-gradient(50rem 50rem at 100% 4%, rgba(167, 139, 250, 0.10), transparent 58%),
+    radial-gradient(40rem 40rem at 50% 118%, rgba(52, 211, 153, 0.08), transparent 60%);
+  background-size:
+    3.5rem 3.5rem,
+    3.5rem 3.5rem,
+    auto,
+    auto,
+    auto;
+  background-repeat:
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
 }

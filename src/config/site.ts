@@ -61,11 +61,13 @@ export const PROFILES = {
   googleBusiness: "",
 } as const;
 
-export const NAV: { href: string; label: string }[] = [
+export const NAV: { href: string; label: string; lock?: boolean }[] = [
   { href: "/", label: "Accueil" },
   { href: "/offres", label: "Offres & tarifs" },
   { href: "/devis", label: "Devis en ligne" },
   { href: "/blog", label: "Blog" },
+  // Espace privé protégé par mot de passe (gate client-side, voir src/pages/3d/index.astro).
+  { href: "/3d", label: "Boutique 3D", lock: true },
 ];
 
 export const LEGAL_NAV: { href: string; label: string }[] = [

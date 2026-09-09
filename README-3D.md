@@ -1,8 +1,8 @@
 # Boutique privée `/3d`
 
 Section **indépendante** du site : layout propre (`src/layouts/Layout3D.astro`),
-aucun lien depuis la nav / le footer / le sitemap, `noindex, nofollow` +
-`Disallow: /3d` dans `robots.txt`.
+lien `Boutique 3D 🔒` dans la nav depuis la Home ; exclue du sitemap, `noindex,
+nofollow` + `Disallow: /3d` dans `robots.txt`.
 
 ## État actuel : protection **client-side** (dissuasive)
 

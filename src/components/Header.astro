@@ -12,7 +12,23 @@ const isActive = (href: string) =>
       class="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
       aria-label={`${SITE.name} — accueil`}
     >
-      <span class="inline-block h-6 w-6 rounded-md bg-gradient-to-br from-[var(--color-cyan)] via-[var(--color-amethyst)] to-[var(--color-emerald)]"></span>
+      <svg
+        viewBox="0 0 32 32"
+        class="h-7 w-7 shrink-0"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <!-- Logo vectoriel Vortexoptim : monogramme « V » vortex, cyan #00e5ff, fond transparent. -->
+        <path
+          d="M16 6 L25 11 V21 L16 26 L7 21 V11 Z"
+          fill="none"
+          stroke="#00e5ff"
+          stroke-width="1.75"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        />
+        <circle cx="16" cy="16" r="3" fill="#00e5ff" />
+      </svg>
       <span>{SITE.name}</span>
     </a>
 
@@ -24,12 +40,17 @@ const isActive = (href: string) =>
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
             class:list={[
-              "rounded-lg px-3 py-2 text-sm transition-colors",
+              "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition-colors",
               isActive(item.href)
                 ? "text-[var(--color-cyan-text)]"
                 : "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]",
             ]}
           >
+            {item.lock && (
+              <svg viewBox="0 0 448 512" class="h-3 w-3 shrink-0" aria-hidden="true" fill="currentColor">
+                <path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 168v56H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-56c0-39.7 32.3-72 72-72s72 32.3 72 72v56z" />
+              </svg>
+            )}
             {item.label}
           </a>
         ))
@@ -62,12 +83,17 @@ const isActive = (href: string) =>
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               class:list={[
-                "rounded-lg px-3 py-2 text-sm",
+                "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm",
                 isActive(item.href)
                   ? "text-[var(--color-cyan-text)]"
                   : "text-[var(--color-ink-muted)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-ink)]",
               ]}
             >
+              {item.lock && (
+                <svg viewBox="0 0 448 512" class="h-3 w-3 shrink-0" aria-hidden="true" fill="currentColor">
+                  <path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 168v56H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-56c0-39.7 32.3-72 72-72s72 32.3 72 72v56z" />
+                </svg>
+              )}
               {item.label}
             </a>
           ))

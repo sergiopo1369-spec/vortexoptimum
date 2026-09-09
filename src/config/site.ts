@@ -16,8 +16,8 @@ export const SITE = {
   lang: "fr",
   zone: "Reims & Grand Est",
   serviceRadiusKm: 15,
-  // TODO: adresse e-mail professionnelle dédiée (§2.4)
-  email: "contact@vortexoptim.fr",
+  // Adresse e-mail professionnelle de l'entreprise (§2.4).
+  email: "vortex.optimum1@gmail.com",
   siret: "", // TODO: SIRET / SIREN (§17.2)
   legalForm: "", // TODO: statut juridique (§17.2)
   publicationDirector: "", // TODO: directeur de publication (§17.2)

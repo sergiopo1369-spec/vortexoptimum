@@ -755,7 +755,13 @@ const PARAMS = {
 
     const choices: (number | undefined)[] = [undefined, undefined, undefined, undefined];
 
-    function showStep(n: number) {
+    /*
+      `focus` vaut false au tout premier appel : donner le focus à la legend force le
+      navigateur à faire défiler l'élément dans la vue, ce qui ouvrait la page d'accueil
+      sur le calculateur au lieu du Hero. Entre deux questions le focus reste nécessaire
+      à la navigation clavier.
+    */
+    function showStep(n: number, focus = true) {
       stepEls.forEach((el, i) => {
         el.hidden = i + 1 !== n;
       });
@@ -765,7 +771,7 @@ const PARAMS = {
       });
       progressLabel.textContent = `Question ${n} / 4`;
       barEl.style.width = `${n * 25}%`;
-      stepEls[n - 1]?.querySelector("legend")?.focus();
+      if (focus) stepEls[n - 1]?.querySelector("legend")?.focus();
     }
 
     /** Compteur animé : rend la restitution vivante sans dépendance externe. */
@@ -917,6 +923,6 @@ const PARAMS = {
       wizardEl.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
     });
 
-    showStep(1);
+    showStep(1, false);
   }
 </script>

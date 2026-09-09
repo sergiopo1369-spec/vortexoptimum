@@ -1,0 +1,71 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import ContactChannels from "../components/ContactChannels.astro";
+
+const steps = [
+  { t: "Signature + appel de cadrage", d: "15 min de discussion directe. On liste les contenus nécessaires et valide votre projet." },
+  { t: "Collecte & prise de vue sur site", d: "Déplacement offert jusqu'à 15 km : audit de l'établissement et photos professionnelles." },
+  { t: "Construction en staging", d: "Un environnement de recette identique à la production, que vous validez avant bascule." },
+  { t: "Mise en ligne + formation", d: "Bascule DNS, vérifications, remise des accès et prise en main de l'espace privé." },
+];
+---
+
+<BaseLayout
+  title="Notre méthode & Contact direct"
+  description="De la signature à la mise en ligne : découvrez notre processus de création et prenez contact avec notre équipe."
+  path="/methode-contact"
+>
+  <!-- Méthode -->
+  <section class="container-page py-20">
+    <SectionHeading 
+      eyebrow="Méthode" 
+      title="De la signature à la mise en ligne" 
+      lead="Un processus rodé en 4 étapes claires, avec un suivi personnalisé et une mise en ligne rapide."
+    />
+    <ol class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
+      {
+        steps.map((s, i) => (
+          <li class="glass flex gap-4 p-5">
+            <span class="text-2xl font-semibold text-[var(--color-amethyst-text)]">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span>
+              <span class="block font-semibold">{s.t}</span>
+              <span class="mt-1 block text-sm text-[var(--color-ink-muted)]">{s.d}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+    
+    <div class="mx-auto mt-12 max-w-3xl">
+      <div class="glass p-6 text-center">
+        <h3 class="text-lg font-semibold text-[var(--color-cyan-text)]">Engagement qualité</h3>
+        <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Chaque site est livré avec un rapport de recette complet : scores Lighthouse, 
+          Core Web Vitals, conformité RGPD et tests fonctionnels. Performance mobile ≥ 90 garantie.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="container-page py-20">
+    <SectionHeading 
+      eyebrow="Contact direct" 
+      title="Parlons de votre projet" 
+      lead="Choisissez le canal qui vous arrange. Réponse rapide, sans intermédiaire."
+    />
+    <div class="mx-auto mt-12 max-w-3xl">
+      <ContactChannels />
+    </div>
+    
+    <div class="mx-auto mt-12 max-w-2xl text-center">
+      <p class="text-sm text-[var(--color-ink-muted)]">
+        <strong>Disponibilité :</strong> Jours ouvrés, 9h–19h<br>
+        <strong>Zone d'intervention :</strong> Reims & 15 km aux alentours (déplacement offert)
+      </p>
+    </div>
+  </section>
+</BaseLayout>

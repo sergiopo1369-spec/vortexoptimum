@@ -55,35 +55,35 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
   pivot.add(core);
   scene.add(pivot);
 
-  // Cœur translucide
+  // Cœur translucide - couleurs plus vives
   const solidGeo = new IcosahedronGeometry(1.35, 1);
-  const solidMat = new MeshBasicMaterial({ color: 0x0b2536, transparent: true, opacity: 0.35 });
+  const solidMat = new MeshBasicMaterial({ color: 0x1a4f6e, transparent: true, opacity: 0.45 });
   const solid = new Mesh(solidGeo, solidMat);
   core.add(solid);
 
-  // Coque filaire cyan
+  // Coque filaire cyan électrique - plus intense
   const shellGeo = new IcosahedronGeometry(1.5, 1);
-  const wireMat = new LineBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.55 });
+  const wireMat = new LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.75 });
   const wire = new LineSegments(new WireframeGeometry(shellGeo), wireMat);
   core.add(wire);
 
-  // Nœuds (sommets) violets
+  // Nœuds (sommets) violets électriques - plus vibrants
   const nodeGeo = new IcosahedronGeometry(1.5, 1);
   const nodeMat = new PointsMaterial({
-    color: 0xa855f7,
-    size: 0.09,
+    color: 0xd946ef, // Magenta plus vibrant
+    size: 0.12,
     transparent: true,
-    opacity: 0.9,
+    opacity: 1.0,
     sizeAttenuation: true,
   });
   const nodes = new Points(nodeGeo, nodeMat);
   core.add(nodes);
 
-  // Halo de particules cyan
-  const N = 130;
+  // Halo de particules cyan électrique - plus dense et vibrant
+  const N = 180; // Plus de particules
   const pos = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
-    const r = 2.2 + Math.random() * 1.6;
+    const r = 2.2 + Math.random() * 1.8;
     const th = Math.random() * Math.PI * 2;
     const ph = Math.acos(2 * Math.random() - 1);
     pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
@@ -93,10 +93,10 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
   const haloGeo = new BufferGeometry();
   haloGeo.setAttribute("position", new BufferAttribute(pos, 3));
   const haloMat = new PointsMaterial({
-    color: 0x00e5ff,
-    size: 0.028,
+    color: 0x00ffff, // Cyan plus électrique
+    size: 0.035, // Particules légèrement plus grandes
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.85,
     sizeAttenuation: true,
   });
   const particles = new Points(haloGeo, haloMat);

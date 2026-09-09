@@ -23,3 +23,5 @@ assets-src/**/*.mp4
 
 # Le média généré (public/media/*) EST versionné à dessein :
 # le déploiement n'a pas besoin de ffmpeg. Voir scripts/prepare-media.mjs
+
+.vercel

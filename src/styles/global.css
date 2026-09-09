@@ -157,6 +157,40 @@
   }
   .btn-ghost:hover { background: var(--color-surface-strong); }
 
+  .btn-whatsapp {
+    color: var(--color-ink);
+    border: 2px solid #25D366;
+    background: rgba(37, 211, 102, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(37, 211, 102, 0.3);
+    transition: all 0.3s ease;
+  }
+  .btn-whatsapp:hover {
+    transform: translateY(-2px);
+    background: rgba(37, 211, 102, 0.2);
+    box-shadow: 0 0 30px rgba(37, 211, 102, 0.5);
+    border-color: #25D366;
+  }
+
+  /* Optimisations responsive pour mobile */
+  @media (max-width: 768px) {
+    .btn {
+      padding: 0.875rem 1.5rem;
+      font-size: 0.875rem;
+      min-height: 44px; /* Touch target minimum */
+    }
+    
+    .btn-whatsapp {
+      border-width: 1px;
+      box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
+    }
+    .btn-whatsapp:hover {
+      transform: none; /* Éviter les animations sur mobile */
+      box-shadow: 0 0 20px rgba(37, 211, 102, 0.3);
+    }
+  }
+
   .eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.14em;
@@ -248,4 +282,93 @@
     no-repeat,
     no-repeat,
     no-repeat;
+}
+
+/* Toile neuronale interactive */
+#neural-network {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+#neural-network canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Optimisations pour la sphère 3D */
+.ir3d {
+  /* Taille agrandie comme demandé */
+  max-width: 36rem !important;
+}
+
+/* Responsive mobile - Hero section */
+@media (max-width: 768px) {
+  /* Hero responsive fixes */
+  .container-page {
+    padding-inline: 1rem;
+  }
+  
+  /* Désactiver les effets lourds sur mobile */
+  #neural-network {
+    display: none;
+  }
+  
+  .ir3d {
+    max-width: 20rem !important;
+  }
+  
+  /* Optimiser les grilles pour mobile */
+  .grid {
+    gap: 1rem;
+  }
+  
+  /* Améliorer la lisibilité du texte */
+  h1 {
+    font-size: 2.5rem !important;
+    line-height: 1.2;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Très petits écrans */
+  h1 {
+    font-size: 2rem !important;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .flex-wrap {
+    flex-direction: column;
+  }
+  
+  /* Navigation mobile améliorée */
+  .container-page {
+    padding-inline: 0.75rem;
+  }
+}
+
+/* Optimisations spécifiques pour le header mobile */
+@media (max-width: 768px) {
+  header .container-page {
+    padding-inline: 1rem;
+  }
+  
+  /* Menu mobile plus accessible */
+  details[open] summary {
+    background: var(--color-surface-strong);
+  }
+  
+  /* Améliorer les zones de tap sur mobile */
+  nav a, .btn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
 }

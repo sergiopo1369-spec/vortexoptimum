@@ -5,7 +5,6 @@ import SectionHeading from "../components/SectionHeading.astro";
 import PackCard from "../components/PackCard.astro";
 import QuoteCalculator from "../components/QuoteCalculator.astro";
 import CalculateurTempsPerdu from "../components/CalculateurTempsPerdu.astro";
-import ContactChannels from "../components/ContactChannels.astro";
 import { PACKS } from "../config/pricing";
 import { SITE } from "../config/site";
 
@@ -16,13 +15,6 @@ const kpis = [
   { label: "Disponibilité hébergement", value: "≥ 99,9 %" },
   { label: "LCP", value: "< 2,5 s" },
   { label: "Réduction des no-shows visée", value: "-30 %" },
-];
-
-const steps = [
-  { t: "Signature + appel de cadrage", d: "15 min sur Cal.com, sous 48h. On liste les contenus nécessaires." },
-  { t: "Collecte & prise de vue sur site", d: "Déplacement offert jusqu'à 15 km : audit de l'établissement et photos professionnelles." },
-  { t: "Construction en staging", d: "Un environnement de recette identique à la production, que vous validez avant bascule." },
-  { t: "Mise en ligne + formation", d: "Bascule DNS, vérifications, remise des accès et prise en main de l'espace privé." },
 ];
 ---
 
@@ -174,29 +166,5 @@ const steps = [
     </dl>
   </section>
 
-  <!-- Process -->
-  <section class="container-page py-20">
-    <SectionHeading eyebrow="Méthode" title="De la signature à la mise en ligne" />
-    <ol class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
-      {
-        steps.map((s, i) => (
-          <li class="glass flex gap-4 p-5">
-            <span class="text-2xl font-semibold text-[var(--color-amethyst-text)]">{String(i + 1).padStart(2, "0")}</span>
-            <span>
-              <span class="block font-semibold">{s.t}</span>
-              <span class="mt-1 block text-sm text-[var(--color-ink-muted)]">{s.d}</span>
-            </span>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
 
-  <!-- Contact -->
-  <section id="contact" class="container-page py-20">
-    <SectionHeading eyebrow="Contact direct" title="Parlons de votre projet" lead="Choisissez le canal qui vous arrange. Réponse rapide, sans intermédiaire." />
-    <div class="mx-auto mt-12 max-w-3xl">
-      <ContactChannels />
-    </div>
-  </section>
 </BaseLayout>

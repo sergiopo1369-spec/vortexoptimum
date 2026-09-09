@@ -18,13 +18,16 @@ const BG_640 = "/media/hero-bg-640.webp";
 ---
 
 <section class="relative isolate overflow-hidden">
+  <!-- Toile neuronale interactive -->
+  <div id="neural-network" class="absolute inset-0 z-0" aria-hidden="true"></div>
+  
   <!--
     Calque de fond isolé. `[data-hero-bg-layer]` est le seul élément à
     transformer pour un futur effet (parallaxe souris / scroll) : il est déjà
     légèrement sur-dimensionné (scale 1.06) pour laisser de la marge de
     translation sans découvrir les bords. Aucun JS ici pour l'instant.
   -->
-  <div class="absolute inset-0 z-0" data-hero-bg aria-hidden="true">
+  <div class="absolute inset-0 z-1" data-hero-bg aria-hidden="true">
     <div class="hero-bg-layer absolute inset-0" data-hero-bg-layer>
       <img
         src={BG_1280}
@@ -57,8 +60,8 @@ const BG_640 = "/media/hero-bg-640.webp";
 
       <div class="mt-9 flex flex-wrap gap-3">
         <a class="btn btn-primary" href="/devis">Estimer mon projet en 1 min</a>
-        <a class="btn btn-ghost" href={CONTACT.calcom.url} rel="noopener">
-          {CONTACT.calcom.label}
+        <a class="btn btn-whatsapp" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">
+          💬 Discuter sur WhatsApp
         </a>
       </div>
 
@@ -115,3 +118,15 @@ const BG_640 = "/media/hero-bg-640.webp";
     }
   }
 </style>
+
+<script>
+  // Initialisation de la toile neuronale
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const { initNeuralNetwork } = await import('../scripts/neural-network');
+      initNeuralNetwork();
+    } catch (error) {
+      console.log('Neural network disabled:', error);
+    }
+  });
+</script>

@@ -21,6 +21,8 @@ export type QuoteResult = {
   monthlyTotal: number;
   /** true si au moins une ligne « sur devis » est sélectionnée. */
   hasQuoteOnly: boolean;
+  /** true si le pack choisi est tout-inclus (Pack Ultime) : options verrouillées. */
+  allInclusive: boolean;
   valid: boolean;
 };
 
@@ -38,9 +40,18 @@ export function computeQuote(selection: QuoteSelection): QuoteResult {
   const pack = selection.pack ? PACKS.find((p) => p.id === selection.pack) : undefined;
   if (pack) lines.push(asLine(pack));
 
+  // Pack tout-inclus (Pack Ultime) : les options listées dans `includedAddons` sont
+  // déjà comprises dans le prix du pack. Elles ne génèrent AUCUN supplément et sont
+  // ignorées ici même si elles arrivent cochées. Seules les options « sur devis »
+  // (ex. déplacement au-delà de 15 km) restent additionnables.
+  const allInclusive = pack?.allInclusive === true;
+  const includedAddons = new Set(allInclusive ? pack?.includedAddons ?? [] : []);
+
   // On respecte l'ordre de déclaration des ADDONS pour un récapitulatif stable.
   for (const addon of ADDONS) {
-    if (selection.addons.includes(addon.id)) lines.push(asLine(addon));
+    if (!selection.addons.includes(addon.id)) continue;
+    if (includedAddons.has(addon.id)) continue;
+    lines.push(asLine(addon));
   }
 
   const chargeable = lines.filter((l) => !l.quoteOnly);
@@ -52,6 +63,7 @@ export function computeQuote(selection: QuoteSelection): QuoteResult {
     setupTotal,
     monthlyTotal,
     hasQuoteOnly: lines.some((l) => l.quoteOnly),
+    allInclusive,
     valid: Boolean(pack),
   };
 }
@@ -79,6 +91,11 @@ export function buildRecap(selection: QuoteSelection, name: string): string {
       (l) =>
         `• ${l.label} — ${l.quoteOnly ? "sur devis" : `${euros(l.setup)} + ${euros(l.monthly)}/mois`}`,
     ),
+    ...(q.allInclusive
+      ? [
+          `✓ Toutes les fonctionnalités et modules sont inclus dans le Pack Ultime : Booster IA, Devis Express OCR, Boutique Stripe, Gestion Ads. Seul le déplacement au-delà de 15 km peut faire l'objet d'un devis kilométrique.`,
+        ]
+      : []),
     ``,
     `Total installation : ${euros(q.setupTotal)}${q.hasQuoteOnly ? " + frais sur devis" : ""}`,
     `Total mensuel : ${euros(q.monthlyTotal)}/mois`,

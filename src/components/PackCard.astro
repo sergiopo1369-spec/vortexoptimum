@@ -1,25 +1,38 @@
 ---
 import { euros } from "../lib/quote";
-import type { PriceLine } from "../config/pricing";
+import type { Pack } from "../config/pricing";
 
 export interface Props {
-  pack: PriceLine & { includes: string[]; freebies: string[] };
+  pack: Pack;
+  /** Force la mise en avant même sans `variant` défini sur le pack. */
   featured?: boolean;
   /** Pré-sélectionne ce pack dans le calculateur. */
   quoteHref?: string;
 }
 const { pack, featured = false, quoteHref = `/devis?pack=${pack.id}` } = Astro.props;
+
+const variant = pack.variant ?? (featured ? "featured" : undefined);
+const isFeatured = variant === "featured" || variant === "ultimate";
+const isUltimate = variant === "ultimate";
+const badge = pack.badge ?? (variant === "featured" ? "Le plus demandé" : null);
 ---
 
 <article
   class:list={[
-    "glass flex flex-col p-6",
-    featured && "glass-glow glass-strong",
+    "flex flex-col p-6",
+    isUltimate ? "glass glass-glow pack-ultimate" : isFeatured ? "glass glass-glow glass-strong" : "glass",
   ]}
 >
-  {featured && (
-    <p class="mb-3 inline-flex w-fit rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-emerald-text)]">
-      Le plus demandé
+  {badge && (
+    <p
+      class:list={[
+        "mb-3 inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold",
+        isUltimate
+          ? "border-0 text-[#04121a] bg-gradient-to-r from-[#00e5ff] to-[#a855f7]"
+          : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-emerald-text)]",
+      ]}
+    >
+      {badge}
     </p>
   )}
   <h3 class="text-xl font-semibold">{pack.label}</h3>
@@ -32,6 +45,12 @@ const { pack, featured = false, quoteHref = `/devis?pack=${pack.id}` } = Astro.p
     <span class="text-3xl font-semibold">{euros(pack.monthly)}</span>
     <span class="text-[var(--color-ink-faint)]">/mois</span>
   </p>
+
+  {pack.compareSetup && pack.compareMonthly && (
+    <p class="mt-1 text-xs text-[var(--color-ink-faint)]">
+      au lieu de <s>{euros(pack.compareSetup)} + {euros(pack.compareMonthly)}/mois</s> à la carte
+    </p>
+  )}
 
   <ul class="mt-6 space-y-2 text-sm">
     {pack.includes.map((f) => (
@@ -53,7 +72,15 @@ const { pack, featured = false, quoteHref = `/devis?pack=${pack.id}` } = Astro.p
     </ul>
   )}
 
-  <a class:list={["btn mt-6", featured ? "btn-primary" : "btn-ghost"]} href={quoteHref}>
-    Configurer ce pack
+  <a class:list={["btn mt-6", isFeatured ? "btn-primary" : "btn-ghost"]} href={quoteHref}>
+    {isUltimate ? "Choisir cette offre" : "Configurer ce pack"}
   </a>
 </article>
+
+<style>
+  .pack-ultimate {
+    box-shadow:
+      0 0 40px -12px rgba(0, 229, 255, 0.35),
+      0 0 62px -22px rgba(168, 85, 247, 0.4);
+  }
+</style>

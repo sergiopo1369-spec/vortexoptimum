@@ -444,6 +444,7 @@ Un livrable n'est considéré "Déployé & En Ligne" (section 8, `statut_projet`
 |---|---|---|
 | 1.0 | Antérieure | Dossier stratégique initial (positionnement, packs, UX, éditorial, CRM). |
 | 2.0 | 2026-09-08 | Ajout : objectifs mesurables, RGPD/légal, architecture technique détaillée, plan de tests, déploiement, planning, matrice de risques, critères d'acceptation, SLA support. Clarification de la clause de délai 24–48h et des schémas de données. |
+| 2.1 | 2026-09-09 | Grille tarifaire « 3 offres » : Starter 390 €/39 €, Pro Connecté 690 €/59 €, nouveau Pack Ultime 990 €/199 € (tout-inclus). Options réajustées : Booster IA 140 €/49 €, Devis Express 70 €/15 €, Boutique Stripe 240 €/29 €, Gestion Ads 100 €/70 €. Règle calculateur : un pack tout-inclus verrouille ses options incluses (aucun supplément, total strict). |
 
 ---
 

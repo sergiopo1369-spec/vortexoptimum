@@ -21,8 +21,9 @@ export default defineConfig({
     defaultStrategy: "hover",
   },
   integrations: [
-    // La boutique privée /3d est exclue du sitemap (non indexée, non liée).
-    sitemap({ filter: (page) => !/\/3d(\/|$)/.test(page) }),
+    // La boutique privée /3d (écran public verrouillé) et sa route privée
+    // /espace-3d-reserve sont exclues du sitemap (non indexées, non liées).
+    sitemap({ filter: (page) => !/\/(3d|espace-3d-reserve)(\/|$)/.test(page) }),
   ],
   vite: {
     plugins: [tailwindcss()],

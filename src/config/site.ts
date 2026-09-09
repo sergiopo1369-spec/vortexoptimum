@@ -43,10 +43,10 @@ export const CONTACT = {
     sla: "Réponse < 1h (jours ouvrés, 9h–19h)",
   },
   calcom: {
-    label: "Appel découverte (15 min)",
+    label: "Audit Stratégique 15 min",
     // TODO: lien Cal.com définitif
     url: "https://cal.com/vortexoptim/decouverte",
-    sla: "Créneau proposé sous 72h",
+    sla: "Diagnostic & faisabilité sous 24h — Sans engagement",
   },
   email: {
     label: "E-mail",
@@ -66,7 +66,9 @@ export const NAV: { href: string; label: string; lock?: boolean }[] = [
   { href: "/offres", label: "Offres & tarifs" },
   { href: "/devis", label: "Devis en ligne" },
   { href: "/blog", label: "Blog" },
-  // Espace privé protégé par mot de passe (gate client-side, voir src/pages/3d/index.astro).
+  // Écran public "Accès Verrouillé" (src/pages/3d/index.astro) : le vrai gate
+  // par mot de passe vit sur la route privée /espace-3d-reserve, jamais liée
+  // depuis la nav (voir README-3D.md).
   { href: "/3d", label: "Boutique 3D", lock: true },
 ];
 

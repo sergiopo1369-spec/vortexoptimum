@@ -1,13 +1,23 @@
 # Boutique privée `/3d`
 
-Section **indépendante** du site : layout propre (`src/layouts/Layout3D.astro`),
-lien `Boutique 3D 🔒` dans la nav depuis la Home ; exclue du sitemap, `noindex,
-nofollow` + `Disallow: /3d` dans `robots.txt`.
+Section **indépendante** du site, en **deux routes séparées** :
+
+- **`/3d`** — écran **public** sobre "Accès Verrouillé" (🔒), sans aucun champ
+  de saisie, bouton de connexion ni lien vers la route privée. C'est la seule
+  URL référencée dans la nav (`Boutique 3D 🔒`, `src/config/site.ts`).
+- **`/espace-3d-reserve`** — route **privée** dédiée, non liée depuis la nav
+  ni depuis `/3d`, qui héberge le vrai formulaire de déverrouillage
+  (`src/pages/espace-3d-reserve.astro`). En cas d'échec (mauvais mot de passe,
+  hash absent, WebCrypto indisponible, trop de tentatives), redirection
+  automatique vers `/3d`.
+
+Layout commun `src/layouts/Layout3D.astro` ; les deux routes sont exclues du
+sitemap et marquées `noindex, nofollow` + `Disallow` dans `robots.txt`.
 
 ## État actuel : protection **client-side** (dissuasive)
 
 Le site est en rendu **100 % statique** (`output: static`, aucun adapter serveur).
-Le gate de `/3d` est donc vérifié **dans le navigateur** :
+Le gate de `/espace-3d-reserve` est donc vérifié **dans le navigateur** :
 
 - mot de passe → `SHA-256` → comparé au hash `PUBLIC_SHOP_3D_HASH` (variable d'env,
   jamais de mot de passe en clair dans le code) ;
@@ -30,17 +40,18 @@ Choisir **une** des deux options selon l'hébergeur retenu :
 
 - **Netlify** : `[[headers]]` + plugin `netlify-plugin-http-auth`, ou
   Netlify Identity, ou un simple `_headers` avec Basic-Auth selon le plan.
-- **Cloudflare Pages** : **Cloudflare Access** (Zero Trust) sur le chemin `/3d*`
-  → e-mail à usage unique / SSO, zéro code.
+- **Cloudflare Pages** : **Cloudflare Access** (Zero Trust) sur le chemin
+  `/espace-3d-reserve*` → e-mail à usage unique / SSO, zéro code.
 - **Vercel** : `vercel.json` `"headers"` + une fonction edge de Basic-Auth,
   ou Vercel Authentication (préviews) / un middleware.
 
-La page `/3d` reste telle quelle ; l'hébergeur bloque la requête en amont.
+La page `/espace-3d-reserve` reste telle quelle ; l'hébergeur bloque la
+requête en amont. `/3d` continue d'afficher l'écran public verrouillé.
 
 ### B. Rendu serveur Astro
 
 Ajouter `@astrojs/node` (ou `@astrojs/vercel` / `@astrojs/netlify`),
-`output: 'server'`, un `src/middleware.ts` qui protège `/3d/*` :
+`output: 'server'`, un `src/middleware.ts` qui protège `/espace-3d-reserve` :
 cookie de session signé (HMAC `SESSION_SECRET`, `httpOnly` + `Secure` +
 `SameSite=Strict`), comparaison `crypto.timingSafeEqual`, rate-limit par IP.
 ⚠️ change le mode de déploiement (runtime Node/serverless requis, plus de

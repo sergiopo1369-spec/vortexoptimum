@@ -88,5 +88,35 @@ const jsonLdBlocks = [localBusiness, ...(Array.isArray(jsonLd) ? jsonLd : jsonLd
     </main>
     <Footer />
     <CookieConsent />
+    
+    <!-- Script pour forcer le scroll en haut au chargement -->
+    <script is:inline>
+      // Force scroll to top on page load
+      if (history.scrollRestoration) {
+        history.scrollRestoration = 'manual';
+      }
+      
+      // Scroll to top immediately on load
+      window.addEventListener('load', function() {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 10);
+      });
+      
+      // Also ensure scroll to top on DOM content loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 10);
+      });
+      
+      // Prevent autofocus from affecting scroll
+      document.addEventListener('DOMContentLoaded', function() {
+        const autofocusElements = document.querySelectorAll('[autofocus]');
+        autofocusElements.forEach(element => {
+          element.removeAttribute('autofocus');
+        });
+      });
+    </script>
   </body>
 </html>

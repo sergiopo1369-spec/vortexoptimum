@@ -297,10 +297,15 @@
     max-width: 20rem;
   }
   
+  /*
+    2,5rem écrasait le text-4xl de Tailwind (2,25rem) et AGRANDISSAIT le titre sur
+    mobile : le H1 de la Home tenait sur cinq lignes. Échelle fluide bornée à la
+    place, pour que le titre reste lisible sans occuper tout le premier écran.
+  */
   h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.9rem, 8vw, 2.25rem);
   }
-  
+
   /* Boutons tactiles optimisés */
   .btn {
     min-height: 44px;

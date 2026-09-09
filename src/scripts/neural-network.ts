@@ -11,7 +11,11 @@ interface Particle {
 
 export class NeuralNetwork {
   private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
+  /*
+    Assertion d'affectation définie : le constructeur sort avant init()/animate()
+    si getContext('2d') échoue, donc ctx n'est jamais lu non affecté.
+  */
+  private ctx!: CanvasRenderingContext2D;
   private particles: Particle[] = [];
   private animationId: number | null = null;
 

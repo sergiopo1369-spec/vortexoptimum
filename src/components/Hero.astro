@@ -49,28 +49,29 @@ const BG_640 = "/media/hero-bg-640.webp";
   </div>
 
   <div
-    class="container-page relative z-10 grid min-h-[86svh] items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
+    class="container-page relative z-10 grid min-h-[76svh] items-center gap-8 py-12 sm:min-h-[86svh] sm:gap-10 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
   >
     <div class="flex min-w-0 flex-col">
       <p class="eyebrow">{eyebrow}</p>
       <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
-      <p class="mt-6 max-w-2xl text-lg text-[var(--color-ink-muted)]">{subtitle}</p>
+      <p class="mt-4 max-w-2xl text-base text-[var(--color-ink-muted)] sm:mt-6 sm:text-lg">{subtitle}</p>
 
-      <div class="mt-9 flex flex-wrap gap-3">
+      <!-- Mobile : deux boutons pleine largeur, donc de largeur égale. En ligne dès sm. -->
+      <div class="mt-7 grid grid-cols-1 gap-3 sm:mt-9 sm:flex sm:flex-wrap">
         <a class="btn btn-primary" href="/devis">Estimer mon projet en 1 min</a>
         <a class="btn btn-whatsapp" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">
           💬 Discuter sur WhatsApp
         </a>
       </div>
 
-      <p class="mt-5 text-sm text-[var(--color-ink-muted)]">
+      <p class="mt-4 text-sm text-[var(--color-ink-muted)] sm:mt-5">
         ⏱ Combien d'heures perdez-vous chaque mois à gérer vos rendez-vous ?{" "}
         <a href="/devis" class="font-semibold text-[var(--color-cyan-text)] link-underline">
           Calculez-le en 30 secondes →
         </a>
       </p>
 
-      <dl class="mt-12 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 text-sm min-[420px]:grid-cols-3">
+      <dl class="mt-8 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-3 text-sm min-[420px]:grid-cols-3 sm:mt-12 sm:gap-y-4">
         <div class="min-w-0">
           <dt class="text-[var(--color-ink-faint)]">Mise en ligne technique</dt>
           <dd class="text-[var(--color-ink)]">24h à 48h<span class="text-[var(--color-ink-faint)]">*</span></dd>

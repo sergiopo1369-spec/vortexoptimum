@@ -33,7 +33,7 @@ const isActive = (href: string) =>
     </a>
 
     <!-- Navigation bureau -->
-    <nav aria-label="Navigation principale" class="hidden items-center gap-1 md:flex">
+    <nav aria-label="Navigation principale" class="hidden items-center gap-1 lg:flex">
       {
         NAV.map((item) => (
           <a
@@ -58,13 +58,13 @@ const isActive = (href: string) =>
     </nav>
 
     <!-- Actions bureau -->
-    <div class="hidden items-center gap-2 md:flex">
+    <div class="hidden items-center gap-2 lg:flex">
       <a class="btn btn-ghost text-sm" href="/devis">Devis rapide</a>
       <a class="btn btn-whatsapp text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">💬 WhatsApp</a>
     </div>
 
     <!-- Menu mobile -->
-    <details class="relative md:hidden">
+    <details class="relative lg:hidden">
       <summary
         class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
         aria-label="Ouvrir le menu"

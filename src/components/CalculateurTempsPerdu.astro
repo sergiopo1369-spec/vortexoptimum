@@ -131,7 +131,7 @@ const PARAMS = {
 
 <section
   id="calculateur-roi"
-  class="roi-section relative scroll-mt-24 overflow-hidden border-t border-slate-800/80 py-16 md:py-20"
+  class="roi-section relative scroll-mt-24 overflow-hidden border-t border-slate-800/80 py-12 sm:py-16 md:py-20"
 >
   <div class="roi-glow" aria-hidden="true"></div>
 
@@ -527,6 +527,22 @@ const PARAMS = {
     outline: 2px solid #00e5ff;
     outline-offset: 2px;
     border-radius: 0.25rem;
+  }
+
+  /*
+    Une <legend> est rendue par défaut DANS l'encoche de la bordure du fieldset.
+    Sur une seule ligne (desktop) elle y tient ; dès qu'elle passe à deux lignes
+    (mobile) elle débordait au-dessus du cadre et chevauchait la bordure.
+    `float` la sort de ce rendu spécial et la remet en flux normal, sans perdre
+    la sémantique fieldset/legend dont dépend la navigation clavier.
+  */
+  .roi-step > legend {
+    float: left;
+    width: 100%;
+    padding: 0;
+  }
+  .roi-step > legend + p {
+    clear: both;
   }
 
   /* Transition entre étapes */

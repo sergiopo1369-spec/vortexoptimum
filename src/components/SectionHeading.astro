@@ -3,7 +3,7 @@ export interface Props {
   eyebrow?: string;
   title: string;
   lead?: string;
-  as?: "h2" | "h3";
+  as?: "h1" | "h2" | "h3";
 }
 const { eyebrow, title, lead, as = "h2" } = Astro.props;
 const Tag = as;

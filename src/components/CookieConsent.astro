@@ -17,7 +17,7 @@
   aria-labelledby="cookie-consent-title"
   class="pointer-events-none fixed inset-x-0 bottom-0 z-50 p-4"
 >
-  <div class="glass glass-strong container-page pointer-events-auto flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+  <div class="cookie-panel container-page pointer-events-auto flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
     <div class="max-w-2xl text-sm">
       <p id="cookie-consent-title" class="font-semibold">Votre vie privée</p>
       <p class="mt-1 text-[var(--color-ink-muted)]">
@@ -33,6 +33,23 @@
     </div>
   </div>
 </div>
+
+<style>
+  /*
+    Ce panneau se superpose à du contenu quelconque (le Hero et son texte clair),
+    contrairement aux cartes .glass posées sur un fond uni. Un fond à 7 % de blanc
+    plus un backdrop-filter ne suffisait pas : le texte du Hero transparaissait à
+    travers le bandeau. Fond quasi opaque, le flou n'étant plus qu'un agrément.
+  */
+  .cookie-panel {
+    background: rgba(10, 15, 25, 0.97);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: 0 -8px 40px -12px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+</style>
 
 <script>
   const KEY = "vx_consent_v1";

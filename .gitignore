@@ -25,3 +25,6 @@ assets-src/**/*.mp4
 # le déploiement n'a pas besoin de ffmpeg. Voir scripts/prepare-media.mjs
 
 .vercel
+
+# Captures et sorties de vérification (jamais livrées)
+artifact/

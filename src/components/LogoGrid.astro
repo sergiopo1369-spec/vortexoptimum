@@ -1,0 +1,279 @@
+---
+/*
+  Grille « Technologies partenaires » + « Technologies propulsées ».
+
+  Intitulé : la section haute s'appelle « Technologies partenaires » et non
+  « Nos partenaires ». Vortexoptim intègre bien Stripe, Vercel ou Astro pour ses
+  clients, mais n'a d'accord commercial avec aucun d'eux : l'affirmer serait une
+  allégation vérifiable par un prospect, et un usage de marque contestable.
+
+  Les marques sont rendues par des SVG géométriques écrits ici, jamais par des
+  fichiers de marque distants — la CSP du site bloque les ressources externes, et
+  une reproduction au trait près poserait un problème de droit des marques.
+
+  Toutes les icônes héritent d'un dégradé cyan → magenta défini une seule fois
+  (#vx-grad) et d'un micro-glow porté par le CSS, pour que la grille se lise
+  comme un seul objet.
+*/
+
+type Item = { name: string; hint: string; icon: string };
+
+/** Technologies réellement mises en œuvre dans les prestations (vérifiable). */
+const PARTENAIRES: Item[] = [
+  {
+    name: "Vercel",
+    hint: "Hébergement edge",
+    icon: `<path d="M20 8 L33 30 H7 Z" />`,
+  },
+  {
+    name: "Astro",
+    hint: "Socle du site",
+    icon: `<path d="M20 6 L27 28 L20 24 L13 28 Z" /><path d="M13.5 30.5 Q20 34.5 26.5 30.5" />`,
+  },
+  {
+    name: "Stripe",
+    hint: "Paiement CB",
+    icon: `<path d="M12 14 Q12 10 19 10 Q25 10 27 12" /><path d="M12 14 Q12 19 20 20 Q28 21 28 26" /><path d="M28 26 Q28 30 20.5 30 Q14 30 12 27.5" />`,
+  },
+  {
+    name: "Google",
+    hint: "Business & Ads",
+    icon: `<circle cx="20" cy="20" r="9" /><path d="M20 15.5 H29 V20 Q29 25 20 25" /><path d="M20 20 H29" />`,
+  },
+  {
+    name: "WhatsApp",
+    hint: "Assistant & rappels",
+    icon: `<path d="M9 31 L11 24.5 Q9 21 9.6 17.6 Q10.8 11 17.4 9.4 Q24.5 7.8 28.8 13 Q32.6 17.8 30 24 Q27.4 30.2 20.4 30.6 Q17 30.8 14.6 29.4 Z" /><path d="M17 17.5 Q17.6 21.5 22.5 23.6" />`,
+  },
+  {
+    name: "TypeScript",
+    hint: "Code typé",
+    icon: `<rect x="8" y="8" width="24" height="24" rx="4" /><path d="M14 18 H22" /><path d="M18 18 V28" /><path d="M28.5 19 Q25 17 25 20.5 Q25 23.5 28.5 24.5 Q31 25.5 28.5 27.5 Q26 28.8 24.5 27" />`,
+  },
+];
+
+/** Capacités du produit — pictogrammes originaux, sans enjeu de marque. */
+const CAPACITES: Item[] = [
+  {
+    name: "Intelligence artificielle",
+    hint: "Agents conversationnels",
+    icon: `<circle cx="20" cy="20" r="4" /><circle cx="10" cy="12" r="2.4" /><circle cx="30" cy="12" r="2.4" /><circle cx="10" cy="28" r="2.4" /><circle cx="30" cy="28" r="2.4" /><path d="M12 13.5 L17 17.8 M28 13.5 L23 17.8 M12 26.5 L17 22.2 M28 26.5 L23 22.2" />`,
+  },
+  {
+    name: "Réseau neuronal",
+    hint: "Modèles adaptatifs",
+    icon: `<path d="M20 7 Q10 11 10 20 Q10 29 20 33 Q30 29 30 20 Q30 11 20 7 Z" /><path d="M20 7 V33 M10 20 H30" /><path d="M13 12.5 Q20 17 27 12.5 M13 27.5 Q20 23 27 27.5" />`,
+  },
+  {
+    name: "Automatisation",
+    hint: "Relances & rappels",
+    icon: `<circle cx="20" cy="20" r="6" /><path d="M20 6 V11 M20 29 V34 M6 20 H11 M29 20 H34" /><path d="M10.5 10.5 L14 14 M29.5 10.5 L26 14 M10.5 29.5 L14 26 M29.5 29.5 L26 26" />`,
+  },
+  {
+    name: "Développement",
+    hint: "Sur mesure",
+    icon: `<path d="M14 13 L6 20 L14 27" /><path d="M26 13 L34 20 L26 27" /><path d="M22.5 9 L17.5 31" />`,
+  },
+  {
+    name: "Vortex de données",
+    hint: "Flux synchronisés",
+    icon: `<path d="M20 8 Q31 11 31 20 Q31 27 24 29" /><path d="M24 29 Q14 31 10.5 24 Q7.5 18 14 14.5" /><path d="M14 14.5 Q20 12 22.5 16.5" /><circle cx="20" cy="20" r="2" />`,
+  },
+  {
+    name: "Analyse & mesure",
+    hint: "Core Web Vitals",
+    icon: `<path d="M8 30 H32" /><rect x="11" y="20" width="4.5" height="10" rx="1" /><rect x="18" y="14" width="4.5" height="16" rx="1" /><rect x="25" y="9" width="4.5" height="21" rx="1" />`,
+  },
+];
+---
+
+<section class="logogrid" aria-labelledby="logogrid-titre">
+  <div class="container-page">
+    <h2 id="logogrid-titre" class="sr-only">Technologies mises en œuvre</h2>
+
+    <!-- Dégradé partagé par toutes les icônes : défini une fois, référencé partout. -->
+    <svg width="0" height="0" aria-hidden="true" focusable="false" class="lg-defs">
+      <defs>
+        <linearGradient id="vx-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00e5ff"></stop>
+          <stop offset="55%" stop-color="#8b5cf6"></stop>
+          <stop offset="100%" stop-color="#ff2fd0"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    {[
+      { label: "Technologies partenaires", lead: "Les briques que nous intégrons à vos projets.", items: PARTENAIRES, dense: false },
+      { label: "Technologies propulsées", lead: "Ce que nous construisons par-dessus.", items: CAPACITES, dense: true },
+    ].map((bloc) => (
+      <div class="lg-bloc">
+        <div class="lg-head">
+          <span class="lg-rule" aria-hidden="true"></span>
+          <div>
+            <p class="lg-label">{bloc.label}</p>
+            <p class="lg-lead">{bloc.lead}</p>
+          </div>
+          <span class="lg-rule" aria-hidden="true"></span>
+        </div>
+
+        <ul class="lg-grid" role="list">
+          {bloc.items.map((it) => (
+            <li class="lg-cell">
+              <span class="lg-mark" aria-hidden="true">
+                <svg viewBox="0 0 40 40" width="40" height="40" set:html={it.icon} />
+              </span>
+              <span class="lg-name">{it.name}</span>
+              <span class="lg-hint">{it.hint}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .logogrid {
+    position: relative;
+    padding: 3rem 0;
+    border-block: 1px solid var(--color-border);
+    background:
+      radial-gradient(48rem 22rem at 20% 0%, rgba(0, 229, 255, 0.06), transparent 70%),
+      radial-gradient(48rem 22rem at 80% 100%, rgba(255, 47, 208, 0.05), transparent 70%);
+  }
+  @media (min-width: 640px) {
+    .logogrid {
+      padding: 4.5rem 0;
+    }
+  }
+  .lg-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .lg-bloc + .lg-bloc {
+    margin-top: 3rem;
+  }
+
+  /* En-tête de bloc : filets latéraux + étiquette espacée */
+  .lg-head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+  .lg-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border));
+  }
+  .lg-head > :last-child.lg-rule {
+    background: linear-gradient(90deg, var(--color-border), transparent);
+  }
+  .lg-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    background: linear-gradient(100deg, #00e5ff, #8b5cf6 55%, #ff2fd0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    white-space: nowrap;
+  }
+  .lg-lead {
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-faint);
+  }
+
+  /*
+    Deux colonnes dès le plus petit écran, six à partir de lg : les tuiles
+    gardent la même taille d'une ligne à l'autre, aucune ne reste isolée.
+  */
+  .lg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 480px) {
+    .lg-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .lg-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  .lg-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 1.1rem 0.6rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.025);
+    transition:
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      transform 0.25s ease;
+  }
+  .lg-cell:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 229, 255, 0.4);
+    background: rgba(0, 229, 255, 0.05);
+  }
+
+  /* Micro-glow : profondeur sans halo criard */
+  .lg-mark {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.35)) drop-shadow(0 0 14px rgba(255, 47, 208, 0.18));
+  }
+  .lg-mark :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .lg-mark :global(svg *) {
+    fill: none;
+    stroke: url(#vx-grad);
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lg-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    line-height: 1.25;
+  }
+  .lg-hint {
+    font-size: 0.68rem;
+    color: var(--color-ink-faint);
+    line-height: 1.3;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lg-cell {
+      transition: none;
+    }
+    .lg-cell:hover {
+      transform: none;
+    }
+  }
+</style>

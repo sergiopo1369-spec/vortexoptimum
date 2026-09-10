@@ -18,16 +18,37 @@ const isActive = (href: string) =>
         aria-hidden="true"
         focusable="false"
       >
-        <!-- Logo vectoriel Vortexoptim : monogramme « V » vortex, cyan #00e5ff, fond transparent. -->
-        <path
-          d="M16 6 L25 11 V21 L16 26 L7 21 V11 Z"
+        {/*
+          Vortex neuronal : trois bras en spirale autour d'un noyau, quatre nœuds
+          reliés au centre. Le dégradé cyan → violet → magenta est propre à ce SVG
+          (id unique) pour ne pas entrer en conflit avec celui de LogoGrid.
+        */}
+        <defs>
+          <linearGradient id="vx-logo-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#00e5ff"></stop>
+            <stop offset="55%" stop-color="#8b5cf6"></stop>
+            <stop offset="100%" stop-color="#ff2fd0"></stop>
+          </linearGradient>
+        </defs>
+        <g
           fill="none"
-          stroke="#00e5ff"
-          stroke-width="1.75"
+          stroke="url(#vx-logo-grad)"
+          stroke-width="1.6"
           stroke-linejoin="round"
           stroke-linecap="round"
-        />
-        <circle cx="16" cy="16" r="3" fill="#00e5ff" />
+        >
+          <path d="M16 4 Q27 7 28 16 Q28.6 23 22 27" />
+          <path d="M22 27 Q13 30.5 7.5 24 Q3.6 18.6 9 13.5" />
+          <path d="M9 13.5 Q15 9.5 19.5 14.5" />
+          <path d="M16 10.5 V6.5 M22.8 19.4 L26.4 21 M13.8 23.6 L11.6 26.8 M10.6 17.4 L7 16.6" />
+        </g>
+        <circle cx="16" cy="16" r="2.6" fill="url(#vx-logo-grad)" />
+        <g fill="url(#vx-logo-grad)">
+          <circle cx="16" cy="6.5" r="1.5" />
+          <circle cx="26.4" cy="21" r="1.5" />
+          <circle cx="11.6" cy="26.8" r="1.5" />
+          <circle cx="7" cy="16.6" r="1.5" />
+        </g>
       </svg>
       <span>{SITE.name}</span>
     </a>
@@ -61,6 +82,19 @@ const isActive = (href: string) =>
     <div class="hidden items-center gap-2 lg:flex">
       <a class="btn btn-ghost text-sm" href="/devis">Devis rapide</a>
       <a class="btn btn-whatsapp text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">💬 WhatsApp</a>
+
+      {/*
+        Motif décoratif d'extrémité : purement ornemental, donc aria-hidden et hors
+        du flux de tabulation. Il ne double pas le lien d'accueil, qui reste le
+        logo-marque à gauche.
+      */}
+      <svg viewBox="0 0 32 32" class="vx-orn" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="url(#vx-logo-grad)" stroke-width="1.4" stroke-linecap="round">
+          <circle cx="16" cy="16" r="11" stroke-dasharray="3.2 5.4"></circle>
+          <circle cx="16" cy="16" r="6.4" stroke-dasharray="2.4 4.2"></circle>
+        </g>
+        <circle cx="16" cy="16" r="2.2" fill="url(#vx-logo-grad)"></circle>
+      </svg>
     </div>
 
     <!-- Menu mobile -->
@@ -105,3 +139,26 @@ const isActive = (href: string) =>
     </details>
   </div>
 </header>
+
+<style>
+  /* Motif d'extrémité : micro-glow et rotation lente, décoratif uniquement. */
+  .vx-orn {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-left: 0.35rem;
+    flex: none;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.4)) drop-shadow(0 0 12px rgba(255, 47, 208, 0.2));
+    animation: vx-orn-spin 26s linear infinite;
+  }
+  @keyframes vx-orn-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vx-orn {
+      animation: none;
+    }
+  }
+</style>

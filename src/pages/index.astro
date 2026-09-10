@@ -5,6 +5,7 @@ import SectionHeading from "../components/SectionHeading.astro";
 import PackCard from "../components/PackCard.astro";
 import QuoteCalculator from "../components/QuoteCalculator.astro";
 import CalculateurTempsPerdu from "../components/CalculateurTempsPerdu.astro";
+import LogoGrid from "../components/LogoGrid.astro";
 import { PACKS } from "../config/pricing";
 import { SITE } from "../config/site";
 
@@ -59,6 +60,9 @@ const kpis = [
       </div>
     </div>
   </section>
+
+  <!-- Technologies : juste sous les textes de positionnement -->
+  <LogoGrid />
 
   <!-- Simulateur de pertes & diagnostic ROI -->
   <CalculateurTempsPerdu />

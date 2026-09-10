@@ -1,6 +1,6 @@
 ---
 import { CONTACT } from "../config/site";
-import InteractiveRobot3D from "./InteractiveRobot3D.astro";
+import NeuralCanvas from "./NeuralCanvas.astro";
 
 export interface Props {
   eyebrow?: string;
@@ -40,12 +40,6 @@ const BG_640 = "/media/hero-bg-640.webp";
         linear-gradient(180deg, rgba(8,12,20,.30) 0%, rgba(8,12,20,.55) 45%, rgba(8,12,20,.92) 100%),
         radial-gradient(70rem 45rem at 25% 0%, rgba(34,211,238,.10), transparent 70%);"
     ></div>
-    <!-- Canvas toile neuronale intégré proprement -->
-    <canvas 
-      id="neural-network-canvas" 
-      class="absolute inset-0 w-full h-full pointer-events-none opacity-60 hidden lg:block"
-      style="z-index: 1;"
-    ></canvas>
   </div>
 
   <div
@@ -98,8 +92,8 @@ const BG_640 = "/media/hero-bg-640.webp";
       réserve plus de colonne, donc plus de zone vide sous le texte. À partir
       de lg il redevient un bloc du tiers droit de la grille.
     */}
-    <div class="hero-3d">
-      <InteractiveRobot3D />
+    <div class="hero-net">
+      <NeuralCanvas />
     </div>
   </div>
 </section>
@@ -116,9 +110,9 @@ const BG_640 = "/media/hero-bg-640.webp";
     texte, atténué pour rester lisible sous les titres. `pointer-events: none`
     garantit que le défilement tactile n'est jamais intercepté.
     C'est ce retrait du flux — et non une hauteur forcée — qui supprime la
-    zone vide : la colonne 3D ne réserve plus d'espace sous le contenu.
+    zone vide : la colonne du réseau ne réserve plus d'espace sous le contenu.
   */
-  .hero-3d {
+  .hero-net {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -127,18 +121,18 @@ const BG_640 = "/media/hero-bg-640.webp";
     opacity: 0.5;
     pointer-events: none;
   }
-  .hero-3d :global(.ir3d) {
+  .hero-net :global(.nc) {
     max-width: min(88vw, 26rem);
   }
 
   @media (min-width: 1024px) {
-    .hero-3d {
+    .hero-net {
       position: static;
       inset: auto;
       opacity: 1;
       display: block;
     }
-    .hero-3d :global(.ir3d) {
+    .hero-net :global(.nc) {
       max-width: 30rem;
     }
   }
@@ -159,15 +153,3 @@ const BG_640 = "/media/hero-bg-640.webp";
   }
 </style>
 
-<script>
-  /*
-    La décision « grand écran ou non » appartient entièrement à
-    initNeuralNetwork, qui l'écoute en continu via matchMedia. La garde
-    window.innerWidth qui se trouvait ici la doublait et l'évaluait une seule
-    fois au chargement : en mode « version ordinateur » activé sur téléphone,
-    elle empêchait définitivement l'initialisation.
-  */
-  import { initNeuralNetwork } from '../scripts/neural-network.ts';
-
-  initNeuralNetwork();
-</script>

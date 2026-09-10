@@ -286,17 +286,8 @@
 
 
 
-/* Sphère 3D responsive */
-.ir3d {
-  max-width: 36rem;
-}
-
-/* Mobile responsive */
+/* Ajustements mobiles */
 @media (max-width: 768px) {
-  .ir3d {
-    max-width: 20rem;
-  }
-  
   /*
     2,5rem écrasait le text-4xl de Tailwind (2,25rem) et AGRANDISSAIT le titre sur
     mobile : le H1 de la Home tenait sur cinq lignes. Échelle fluide bornée à la

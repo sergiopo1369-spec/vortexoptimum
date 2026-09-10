@@ -1,0 +1,85 @@
+---
+/*
+  Réseau neuronal du Héro — Canvas 2D.
+
+  Remplace l'ancien InteractiveRobot3D (Three.js) : même thématique de nœuds
+  connectés, sans WebGL. Le module de rendu est importé dynamiquement à
+  l'entrée en vue, donc il ne pèse pas sur le premier rendu : le titre et les
+  boutons du Héro s'affichent avant que l'animation ne démarre.
+
+  Le canvas est purement décoratif — aria-hidden et pointer-events: none, il
+  n'intercepte ni clic ni défilement tactile. Sa boîte est dimensionnée par
+  CSS (aspect-ratio), donc réservée avant tout script : aucun décalage de
+  mise en page au démarrage.
+*/
+interface Props {
+  class?: string;
+}
+const { class: klass = "" } = Astro.props;
+---
+
+<div class:list={["nc", klass]} data-nc-root aria-hidden="true">
+  <canvas class="nc__canvas" data-nc-canvas></canvas>
+</div>
+
+<style>
+  .nc {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+    /* Espace réservé avant tout script : pas de décalage au démarrage. */
+    aspect-ratio: 4 / 5;
+    pointer-events: none;
+    touch-action: pan-y;
+  }
+  .nc__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* La lueur reste un filtre CSS : elle épouse le tracé sans coûter une
+       passe de post-traitement, comme c'était déjà le cas avec la scène 3D. */
+    filter: drop-shadow(0 0 26px rgba(0, 229, 255, 0.22))
+      drop-shadow(0 0 40px rgba(255, 47, 208, 0.12));
+  }
+</style>
+
+<script>
+  import type { HandleReseau } from "../scripts/neural-canvas";
+
+  const racines = document.querySelectorAll<HTMLElement>("[data-nc-root]");
+
+  racines.forEach((racine) => {
+    if (racine.dataset.ncInit) return;
+    racine.dataset.ncInit = "1";
+
+    const canvas = racine.querySelector<HTMLCanvasElement>("[data-nc-canvas]");
+    if (!canvas) return;
+
+    let handle: HandleReseau | null = null;
+    let demarre = false;
+
+    /*
+      Chargement différé : le module n'est demandé qu'à l'approche du canvas.
+      Le réseau gère ensuite lui-même sa pause hors viewport et son
+      redimensionnement — cet observateur ne sert qu'au premier chargement.
+    */
+    const io = new IntersectionObserver(
+      async (entries) => {
+        if (!entries[0].isIntersecting || demarre) return;
+        demarre = true;
+        io.disconnect();
+        try {
+          const mod = await import("../scripts/neural-canvas");
+          handle = mod.initReseauCanvas(canvas);
+        } catch {
+          demarre = false; // échec silencieux : le Héro reste intact
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(racine);
+
+    window.addEventListener("pagehide", () => handle?.destroy());
+  });
+</script>

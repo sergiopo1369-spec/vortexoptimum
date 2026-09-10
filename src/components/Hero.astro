@@ -160,12 +160,14 @@ const BG_640 = "/media/hero-bg-640.webp";
 </style>
 
 <script>
-  // Inicialización de la toile neuronale solo en desktop
+  /*
+    La décision « grand écran ou non » appartient entièrement à
+    initNeuralNetwork, qui l'écoute en continu via matchMedia. La garde
+    window.innerWidth qui se trouvait ici la doublait et l'évaluait une seule
+    fois au chargement : en mode « version ordinateur » activé sur téléphone,
+    elle empêchait définitivement l'initialisation.
+  */
   import { initNeuralNetwork } from '../scripts/neural-network.ts';
-  
-  if (window.innerWidth >= 1024 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.addEventListener('DOMContentLoaded', () => {
-      initNeuralNetwork();
-    });
-  }
+
+  initNeuralNetwork();
 </script>

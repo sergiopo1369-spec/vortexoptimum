@@ -59,7 +59,6 @@ export const PACKS: Pack[] = [
       "Formulaire de contact sécurisé anti-spam, boutons appel / WhatsApp / SMS",
     ],
     freebies: [
-      "Arrière-plan animé / vidéo 3D immersive en page d'accueil (valeur 49 €)",
       "Espace privé client sécurisé (valeur 49 €)",
       "Déplacement sur site inclus dans un rayon de 15 km",
     ],
@@ -86,7 +85,6 @@ export const PACKS: Pack[] = [
       "Notifications automatiques de confirmation et rappels (réduction des no-shows)",
     ],
     freebies: [
-      "Arrière-plan animé / vidéo 3D immersive en page d'accueil (valeur 49 €)",
       "Espace privé client sécurisé (valeur 49 €)",
       "Déplacement sur site inclus dans un rayon de 15 km",
     ],
@@ -119,7 +117,6 @@ export const PACKS: Pack[] = [
     ],
     freebies: [
       "Audit & configuration de l'assistant IA offerts (valeur 190 €)",
-      "Arrière-plan animé / vidéo 3D immersive en page d'accueil (valeur 49 €)",
       "Espace privé client sécurisé (valeur 49 €)",
     ],
     exclusions: [

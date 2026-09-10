@@ -44,7 +44,11 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
     powerPreference: "low-power",
   });
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  // Pixel-ratio plafonné plus bas sur mobile : la scène reste nette sans
+  // saturer le GPU d'un téléphone, où le canvas est de toute façon plus petit.
+  renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio || 1, window.innerWidth < 640 ? 1.25 : 1.5),
+  );
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(45, 1, 0.1, 100);

@@ -83,7 +83,7 @@ export function buildRecap(selection: QuoteSelection, name: string): string {
   const q = computeQuote(selection);
   const who = name.trim() ? name.trim() : "(nom à préciser)";
   const parts: string[] = [
-    `Demande de devis — Vortexoptim`,
+    `Demande de devis — Vortexoptimum`,
     `Client : ${who}`,
     ``,
     `Prestations sélectionnées :`,

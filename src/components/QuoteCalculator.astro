@@ -207,7 +207,7 @@ import { CONTACT } from "../config/site";
       const recap = buildRecap(selection, name);
       waEl.href = `https://wa.me/${CONTACT.whatsapp.waMe}?text=${encodeURIComponent(recap)}`;
       emailEl.href = `mailto:${SITE.email}?subject=${encodeURIComponent(
-        "Demande de devis — " + (name.trim() || "site Vortexoptim"),
+        "Demande de devis — " + (name.trim() || "site Vortexoptimum"),
       )}&body=${encodeURIComponent(recap)}`;
     }
 

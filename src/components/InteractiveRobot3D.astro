@@ -4,12 +4,12 @@
 
   - SSR : seul le fallback SVG animé (CSS pur, ~1 Ko) est rendu. Aucun code
     navigateur dans le frontmatter.
-  - Desktop (≥ 1024px), WebGL dispo, sans prefers-reduced-motion : un <canvas>
+  - WebGL dispo et sans prefers-reduced-motion — mobile compris : un <canvas>
     Three.js prend le relais, chargé en chunk séparé via import() dynamique
-    déclenché par IntersectionObserver — jamais dans le bundle principal,
-    jamais téléchargé sur mobile.
-  - Fallback (mobile / pas de WebGL / reduced-motion) : le SVG reste,
-    figé si reduced-motion.
+    déclenché par IntersectionObserver, jamais dans le bundle principal.
+    Sous 640 px la scène abaisse son pixel-ratio (voir ai-core-scene.ts).
+  - Fallback (pas de WebGL / reduced-motion) : le SVG reste, figé si
+    reduced-motion. Three.js n'est alors jamais téléchargé.
   - `pointer-events: none` + `aria-hidden` : purement décoratif, n'intercepte
     ni clic ni scroll.
 */
@@ -46,13 +46,6 @@ const { class: klass = "" } = Astro.props;
       <circle cx="100" cy="172" r="3"></circle>
       <circle cx="28" cy="100" r="2.4"></circle>
     </g>
-    <polygon
-      class="ir3d__poly"
-      points="100,62 133,120 67,120"
-      fill="none"
-      stroke="#7ce7f5"
-      stroke-width="1.5"
-    ></polygon>
     <circle class="ir3d__pulse" cx="100" cy="100" r="8" fill="#00e5ff"></circle>
   </svg>
 
@@ -105,10 +98,6 @@ const { class: klass = "" } = Astro.props;
     transform-origin: 100px 100px;
     animation: ir3d-rot 20s linear infinite reverse;
   }
-  .ir3d__poly {
-    transform-origin: 100px 100px;
-    animation: ir3d-rot 15s linear infinite;
-  }
   .ir3d__pulse {
     transform-origin: 100px 100px;
     animation: ir3d-pulse 3.4s ease-in-out infinite;
@@ -134,7 +123,6 @@ const { class: klass = "" } = Astro.props;
   @media (prefers-reduced-motion: reduce) {
     .ir3d__ring,
     .ir3d__ring-rev,
-    .ir3d__poly,
     .ir3d__pulse {
       animation: none;
     }
@@ -163,11 +151,12 @@ const { class: klass = "" } = Astro.props;
     root.dataset.ir3dInit = "1";
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const desktop = window.matchMedia("(min-width: 1024px)");
 
-    // Mobile / WebGL absent / mouvement réduit → on garde le fallback SVG,
-    // Three.js n'est jamais chargé.
-    if (!desktop.matches || reduced.matches || !hasWebGL()) return;
+    // La scène tourne aussi sur mobile : le chunk Three.js n'est chargé qu'à
+    // l'entrée en vue, et la scène abaisse son pixel-ratio sous 640 px.
+    // Sans WebGL, ou en mouvement réduit, le fallback SVG reste en place et
+    // Three.js n'est jamais téléchargé.
+    if (reduced.matches || !hasWebGL()) return;
 
     const canvas = root.querySelector<HTMLCanvasElement>(".ir3d__canvas");
     if (!canvas) return;

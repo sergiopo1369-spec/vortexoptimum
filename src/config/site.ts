@@ -5,8 +5,8 @@
  */
 
 export const SITE = {
-  name: "Vortexoptim",
-  legalName: "Vortexoptim", // TODO: raison sociale exacte + forme juridique (auto-entrepreneur / SARL…)
+  name: "Vortexoptimum",
+  legalName: "Vortexoptimum", // TODO: raison sociale exacte + forme juridique (auto-entrepreneur / SARL…)
   tagline: "Écosystèmes digitaux & agents IA pour les commerces de Reims",
   description:
     "Agence digitale et ingénierie IA de proximité à Reims. Site haute performance, prise de rendez-vous, paiement en ligne et assistant IA — déploiement rapide, contact humain direct.",

@@ -1,4 +1,4 @@
-# Vortexoptim — site vitrine
+# Vortexoptimum — site vitrine
 
 Agence digitale & ingénierie IA de proximité — Reims & Grand Est.
 Implémentation du **cahier des charges maître v2** ([`docs/cahier-des-charges.md`](docs/cahier-des-charges.md)).

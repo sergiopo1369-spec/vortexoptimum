@@ -21,6 +21,8 @@ import {
   BufferAttribute,
   Points,
   PointsMaterial,
+  AdditiveBlending,
+  Color,
 } from "three";
 
 export interface CoreHandle {
@@ -61,7 +63,7 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
 
   // Cœur translucide - couleurs plus vives
   const solidGeo = new IcosahedronGeometry(1.35, 1);
-  const solidMat = new MeshBasicMaterial({ color: 0x1a4f6e, transparent: true, opacity: 0.45 });
+  const solidMat = new MeshBasicMaterial({ color: 0x1a4f6e, transparent: true, opacity: 0.34 });
   const solid = new Mesh(solidGeo, solidMat);
   core.add(solid);
 
@@ -157,6 +159,160 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
   links.frustumCulled = false;
   pivot.add(links);
 
+  /* ------------------------------------------------------------------ *
+     Réseau neuronal en couches (perceptron multi-couches)
+
+     Quatre colonnes de nœuds réparties sur l'axe X, à l'intérieur de la
+     coque filaire. La teinte interpole cyan (gauche) → magenta (droite)
+     selon la profondeur de couche, comme un signal qui se transforme en
+     traversant le réseau. Le rendu additif tient lieu de bloom : un
+     EffectComposer aurait doublé le poids du chunk pour un halo que le
+     drop-shadow CSS du canvas produit déjà.
+   * ------------------------------------------------------------------ */
+  const net = new Group();
+  core.add(net);
+
+  const LAYERS = [4, 6, 6, 4];
+  const CYAN = new Color(0x00e5ff);
+  const MAGENTA = new Color(0xff2fd0);
+
+  type Node = { x: number; y: number; z: number };
+  const layers: Node[][] = [];
+  const nodeXY: number[] = [];
+  const nodeRGB: number[] = [];
+
+  LAYERS.forEach((count, li) => {
+    // -1,05 → +1,05 : le réseau reste à l'intérieur de la coque (rayon 1,5).
+    const x = LAYERS.length === 1 ? 0 : -1.05 + (2.1 * li) / (LAYERS.length - 1);
+    const teinte = CYAN.clone().lerp(MAGENTA, li / (LAYERS.length - 1));
+    const col: Node[] = [];
+    for (let i = 0; i < count; i++) {
+      const y = count === 1 ? 0 : -0.78 + (1.56 * i) / (count - 1);
+      // Léger décalage en Z : le réseau garde de l'épaisseur en rotation.
+      const z = Math.sin(li * 1.7 + i * 0.9) * 0.28;
+      col.push({ x, y, z });
+      nodeXY.push(x, y, z);
+      nodeRGB.push(teinte.r, teinte.g, teinte.b);
+    }
+    layers.push(col);
+  });
+
+  const netNodeGeo = new BufferGeometry();
+  netNodeGeo.setAttribute("position", new BufferAttribute(new Float32Array(nodeXY), 3));
+  netNodeGeo.setAttribute("color", new BufferAttribute(new Float32Array(nodeRGB), 3));
+  const netNodeMat = new PointsMaterial({
+    size: 0.16,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.95,
+    sizeAttenuation: true,
+    blending: AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const netNodes = new Points(netNodeGeo, netNodeMat);
+  net.add(netNodes);
+
+  // Arêtes : chaque nœud d'une couche est relié à tous ceux de la suivante.
+  // Chaque extrémité porte la teinte de sa propre couche → le dégradé se lit
+  // le long du fil.
+  type Edge = { ax: number; ay: number; az: number; bx: number; by: number; bz: number };
+  const edges: Edge[] = [];
+  const edgePos: number[] = [];
+  const edgeRGB: number[] = [];
+
+  for (let li = 0; li < layers.length - 1; li++) {
+    const tA = CYAN.clone().lerp(MAGENTA, li / (LAYERS.length - 1));
+    const tB = CYAN.clone().lerp(MAGENTA, (li + 1) / (LAYERS.length - 1));
+    for (const a of layers[li]) {
+      for (const b of layers[li + 1]) {
+        edges.push({ ax: a.x, ay: a.y, az: a.z, bx: b.x, by: b.y, bz: b.z });
+        edgePos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+        edgeRGB.push(tA.r, tA.g, tA.b, tB.r, tB.g, tB.b);
+      }
+    }
+  }
+
+  const netEdgeGeo = new BufferGeometry();
+  netEdgeGeo.setAttribute("position", new BufferAttribute(new Float32Array(edgePos), 3));
+  netEdgeGeo.setAttribute("color", new BufferAttribute(new Float32Array(edgeRGB), 3));
+  const netEdgeMat = new LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.2,
+    blending: AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const netEdges = new LineSegments(netEdgeGeo, netEdgeMat);
+  net.add(netEdges);
+
+  /*
+    Impulsions de données : chaque impulsion parcourt une arête tirée au sort,
+    puis se voit réaffecter une nouvelle arête à l'arrivée. Le nombre est fixe,
+    donc le coût par frame est constant et le tampon jamais réalloué.
+  */
+  const PULSES = Math.min(28, edges.length);
+  const pulseEdge = new Int16Array(PULSES);
+  const pulseT = new Float32Array(PULSES);
+  const pulseSpeed = new Float32Array(PULSES);
+  const pulsePos = new Float32Array(PULSES * 3);
+  const pulseRGB = new Float32Array(PULSES * 3);
+
+  function affecterArete(i: number): void {
+    pulseEdge[i] = Math.floor(Math.random() * edges.length);
+    pulseT[i] = 0;
+    pulseSpeed[i] = 0.006 + Math.random() * 0.012;
+  }
+  for (let i = 0; i < PULSES; i++) {
+    affecterArete(i);
+    pulseT[i] = Math.random(); // désynchronise le départ
+  }
+
+  const pulseGeo = new BufferGeometry();
+  const pulsePosAttr = new BufferAttribute(pulsePos, 3);
+  const pulseColAttr = new BufferAttribute(pulseRGB, 3);
+  pulseGeo.setAttribute("position", pulsePosAttr);
+  pulseGeo.setAttribute("color", pulseColAttr);
+  const pulseMat = new PointsMaterial({
+    size: 0.105,
+    vertexColors: true,
+    transparent: true,
+    opacity: 1,
+    sizeAttenuation: true,
+    blending: AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const pulses = new Points(pulseGeo, pulseMat);
+  pulses.frustumCulled = false;
+  net.add(pulses);
+
+  const teinteImpulsion = new Color();
+
+  function updateReseau(): void {
+    for (let i = 0; i < PULSES; i++) {
+      pulseT[i] += pulseSpeed[i];
+      if (pulseT[i] >= 1) affecterArete(i);
+
+      const e = edges[pulseEdge[i]];
+      const k = pulseT[i];
+      const o = i * 3;
+      pulsePos[o] = e.ax + (e.bx - e.ax) * k;
+      pulsePos[o + 1] = e.ay + (e.by - e.ay) * k;
+      pulsePos[o + 2] = e.az + (e.bz - e.az) * k;
+
+      // La teinte suit la position sur l'axe X, donc la même logique
+      // cyan → magenta que les nœuds : l'impulsion « se transforme ».
+      teinteImpulsion.copy(CYAN).lerp(MAGENTA, (pulsePos[o] + 1.05) / 2.1);
+      pulseRGB[o] = teinteImpulsion.r;
+      pulseRGB[o + 1] = teinteImpulsion.g;
+      pulseRGB[o + 2] = teinteImpulsion.b;
+    }
+    pulsePosAttr.needsUpdate = true;
+    pulseColAttr.needsUpdate = true;
+  }
+
   let targetRX = 0;
   let targetRY = 0;
   let running = false;
@@ -223,6 +379,19 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
     // noyau (non gaté par reducedMotion) ; seule la parallaxe souris du
     // pivot respecte prefers-reduced-motion, comme pour le reste de la scène.
     updateConstellation();
+    updateReseau();
+    // Pulsation lumineuse de la coque filaire : respiration lente de
+    // l'opacité, indépendante de la mise à l'échelle du noyau.
+    wireMat.opacity = 0.55 + Math.sin(t * 0.022) * 0.2;
+    netEdgeMat.opacity = 0.17 + Math.sin(t * 0.022 + 1.2) * 0.07;
+    /*
+      Contre-rotation TOTALE : le réseau annule la rotation de son parent et
+      reste donc face caméra. À 0,72 il tournait encore, et les couches se
+      lisaient comme un enchevêtrement au lieu d un perceptron. Un léger
+      balancement entretient la profondeur sans nuire à la lecture.
+    */
+    net.rotation.y = -core.rotation.y + Math.sin(t * 0.008) * 0.18;
+    net.rotation.x = Math.sin(t * 0.006 + 0.8) * 0.1;
     if (!reducedMotion) {
       pivot.rotation.x += (targetRX - pivot.rotation.x) * 0.05;
       pivot.rotation.y += (targetRY - pivot.rotation.y) * 0.05;
@@ -259,6 +428,12 @@ export function initAiCore(canvas: HTMLCanvasElement, reducedMotion: boolean): C
       haloGeo.dispose();
       starGeo.dispose();
       linkGeo.dispose();
+      netNodeGeo.dispose();
+      netEdgeGeo.dispose();
+      pulseGeo.dispose();
+      netNodeMat.dispose();
+      netEdgeMat.dispose();
+      pulseMat.dispose();
       solidMat.dispose();
       wireMat.dispose();
       nodeMat.dispose();

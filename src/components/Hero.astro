@@ -51,7 +51,8 @@ const BG_640 = "/media/hero-bg-640.webp";
   <div
     class="container-page relative z-10 grid min-h-[76svh] items-center gap-8 py-12 sm:min-h-[86svh] sm:gap-10 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
   >
-    <div class="flex min-w-0 flex-col">
+    {/* relative z-10 : le texte reste au-dessus du réseau passé en fond sous lg. */}
+    <div class="relative z-10 flex min-w-0 flex-col">
       <p class="eyebrow">{eyebrow}</p>
       <h1 class="mt-4 max-w-3xl text-4xl font-semibold sm:text-5xl md:text-6xl">{title}</h1>
       <p class="mt-4 max-w-2xl text-base text-[var(--color-ink-muted)] sm:mt-6 sm:text-lg">{subtitle}</p>
@@ -92,7 +93,12 @@ const BG_640 = "/media/hero-bg-640.webp";
       </p>
     </div>
 
-    <div class="mx-auto w-full max-w-[16rem] sm:max-w-xs lg:max-w-none">
+    {/*
+      Sous lg, le réseau passe en arrière-plan centré et atténué : il ne
+      réserve plus de colonne, donc plus de zone vide sous le texte. À partir
+      de lg il redevient un bloc du tiers droit de la grille.
+    */}
+    <div class="hero-3d">
       <InteractiveRobot3D />
     </div>
   </div>
@@ -103,6 +109,38 @@ const BG_640 = "/media/hero-bg-640.webp";
   [data-hero-bg-layer] {
     transform: none;
     will-change: auto;
+  }
+
+  /*
+    Sous lg : le réseau neuronal est sorti du flux et centré derrière le
+    texte, atténué pour rester lisible sous les titres. `pointer-events: none`
+    garantit que le défilement tactile n'est jamais intercepté.
+    C'est ce retrait du flux — et non une hauteur forcée — qui supprime la
+    zone vide : la colonne 3D ne réserve plus d'espace sous le contenu.
+  */
+  .hero-3d {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .hero-3d :global(.ir3d) {
+    max-width: min(88vw, 26rem);
+  }
+
+  @media (min-width: 1024px) {
+    .hero-3d {
+      position: static;
+      inset: auto;
+      opacity: 1;
+      display: block;
+    }
+    .hero-3d :global(.ir3d) {
+      max-width: 30rem;
+    }
   }
   
   /* Styles bouton WhatsApp */

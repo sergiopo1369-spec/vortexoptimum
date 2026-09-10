@@ -52,25 +52,36 @@ const badge = pack.badge ?? (variant === "featured" ? "Le plus demandé" : null)
     </p>
   )}
 
-  <ul class="mt-6 space-y-2 text-sm">
-    {pack.includes.map((f) => (
-      <li class="flex gap-2">
-        <span aria-hidden="true" class="mt-0.5 text-[var(--color-cyan-text)]">✓</span>
-        <span>{f}</span>
-      </li>
-    ))}
-  </ul>
+  {/*
+    Sur mobile les trois packs s'empilent : leurs listes complètes allongeaient la
+    page de plusieurs écrans avant le moindre bouton. Servi `open` — donc complet
+    sur desktop et sans JS — et refermé uniquement sous 640 px par le <script>.
+  */}
+  <details class="pack-details" open>
+    <summary class="pack-summary">
+      Voir le détail — {pack.includes.length + pack.freebies.length} prestations
+    </summary>
 
-  {pack.freebies.length > 0 && (
-    <ul class="mt-4 space-y-2 border-t border-[var(--color-border)] pt-4 text-sm text-[var(--color-ink-muted)]">
-      {pack.freebies.map((f) => (
+    <ul class="mt-4 space-y-2 text-sm sm:mt-6">
+      {pack.includes.map((f) => (
         <li class="flex gap-2">
-          <span aria-hidden="true" class="mt-0.5">🎁</span>
+          <span aria-hidden="true" class="mt-0.5 text-[var(--color-cyan-text)]">✓</span>
           <span>{f}</span>
         </li>
       ))}
     </ul>
-  )}
+
+    {pack.freebies.length > 0 && (
+      <ul class="mt-4 space-y-2 border-t border-[var(--color-border)] pt-4 text-sm text-[var(--color-ink-muted)]">
+        {pack.freebies.map((f) => (
+          <li class="flex gap-2">
+            <span aria-hidden="true" class="mt-0.5">🎁</span>
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </details>
 
   <a class:list={["btn mt-6", isFeatured ? "btn-primary" : "btn-ghost"]} href={quoteHref}>
     {isUltimate ? "Choisir cette offre" : "Configurer ce pack"}
@@ -78,9 +89,83 @@ const badge = pack.badge ?? (variant === "featured" ? "Le plus demandé" : null)
 </article>
 
 <style>
+  .pack-summary {
+    cursor: pointer;
+    margin-top: 1.5rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink-muted);
+    list-style: none;
+  }
+  .pack-summary::-webkit-details-marker {
+    display: none;
+  }
+  .pack-summary::after {
+    content: " ▾";
+    color: var(--color-cyan-text);
+  }
+  .pack-details[open] > .pack-summary::after {
+    content: " ▴";
+  }
+  .pack-summary:hover {
+    color: var(--color-ink);
+    border-color: color-mix(in oklab, var(--color-cyan) 45%, transparent);
+  }
+  .pack-summary:focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+
+  /*
+    `display: contents` ne suffisait PAS à réafficher le contenu : Chrome masque
+    le contenu d'un <details> fermé via content-visibility sur ::details-content,
+    que la boîte du details existe ou non — les listes disparaissaient du desktop.
+    Le <details> est donc rendu `open` par défaut : desktop et navigation sans JS
+    voient tout, et seul le mobile referme (voir le <script>).
+  */
+  @media (min-width: 640px) {
+    .pack-summary {
+      display: none;
+    }
+  }
+
   .pack-ultimate {
     box-shadow:
       0 0 40px -12px rgba(0, 229, 255, 0.35),
       0 0 62px -22px rgba(168, 85, 247, 0.4);
   }
 </style>
+
+<script>
+  /*
+    Le <details> est servi ouvert : sans JS, ou sur desktop, la fiche reste
+    complète. Seul le mobile le referme, pour éviter que les trois packs
+    empilés n'allongent la page de plusieurs écrans avant le premier bouton.
+    Un pack déjà déplié par l'utilisateur n'est jamais refermé de force.
+  */
+  const etroit = window.matchMedia("(max-width: 639px)");
+  const packs = document.querySelectorAll<HTMLDetailsElement>(".pack-details");
+
+  function appliquer(e: MediaQueryList | MediaQueryListEvent) {
+    packs.forEach((d) => {
+      if (e.matches) {
+        if (d.dataset.userOpen !== "1") d.open = false;
+      } else {
+        d.open = true;
+      }
+    });
+  }
+
+  packs.forEach((d) => {
+    d.addEventListener("toggle", () => {
+      if (etroit.matches && d.open) d.dataset.userOpen = "1";
+    });
+  });
+
+  appliquer(etroit);
+  etroit.addEventListener("change", appliquer);
+</script>

@@ -97,50 +97,217 @@ const isActive = (href: string) =>
       </svg>
     </div>
 
-    <!-- Menu mobile -->
-    <details class="relative lg:hidden">
-      <summary
-        class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
-        aria-label="Ouvrir le menu"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    {/*
+      Menu mobile — volet plein écran.
+      Bâti sur <details> : l'ouverture/fermeture fonctionne sans JavaScript.
+      Le <summary> se transforme en croix fixe au-dessus du voile quand le
+      volet est ouvert (CSS pur), pour rester fermable même sans JS. Le script
+      n'ajoute que le confort : verrou de défilement, Échap, piège de focus.
+    */}
+    <details class="vx-drawer lg:hidden" data-drawer>
+      <summary class="vx-drawer__toggle" aria-label="Ouvrir le menu">
+        <svg class="vx-drawer__ico-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
         </svg>
+        <svg class="vx-drawer__ico-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 5l14 14M19 5L5 19" stroke-linecap="round" />
+        </svg>
       </summary>
-      <nav
-        aria-label="Navigation mobile"
-        class="glass glass-strong absolute right-0 z-50 mt-2 flex w-60 flex-col gap-1 p-2"
-      >
-        {
-          NAV.map((item) => (
-            <a
-              href={item.href}
-              aria-current={isActive(item.href) ? "page" : undefined}
-              class:list={[
-                "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm",
-                isActive(item.href)
-                  ? "text-[var(--color-cyan-text)]"
-                  : "text-[var(--color-ink-muted)] hover:bg-[var(--color-surface-strong)] hover:text-[var(--color-ink)]",
-              ]}
-            >
-              {item.lock && (
-                <svg viewBox="0 0 448 512" class="h-3 w-3 shrink-0" aria-hidden="true" fill="currentColor">
-                  <path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 168v56H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-56c0-39.7 32.3-72 72-72s72 32.3 72 72v56z" />
-                </svg>
-              )}
-              {item.label}
-            </a>
-          ))
-        }
-        <div class="my-1 h-px bg-[var(--color-border)]"></div>
-        <a class="btn btn-ghost text-sm" href="/devis">Devis rapide</a>
-        <a class="btn btn-whatsapp text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">💬 WhatsApp</a>
-      </nav>
+
+      <div class="vx-drawer__panel">
+        <nav aria-label="Navigation mobile" class="vx-drawer__nav">
+          {
+            NAV.map((item) => (
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                class:list={["vx-drawer__link", isActive(item.href) && "is-active"]}
+              >
+                {item.lock && (
+                  <svg viewBox="0 0 448 512" class="vx-drawer__lock" aria-hidden="true" fill="currentColor">
+                    <path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 168v56H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-56c0-39.7 32.3-72 72-72s72 32.3 72 72v56z" />
+                  </svg>
+                )}
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+
+        {/* Bloc d'action détaché de la navigation : fond et bordure distincts. */}
+        <div class="vx-drawer__actions">
+          <p class="vx-drawer__actions-label">Passer à l'action</p>
+          <a class="btn btn-primary" href="/devis">Devis rapide</a>
+          <a class="btn btn-whatsapp" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">
+            💬 WhatsApp
+          </a>
+        </div>
+      </div>
     </details>
   </div>
 </header>
 
 <style>
+  /* ---------------- Volet de navigation mobile ---------------- */
+
+  .vx-drawer {
+    position: relative;
+  }
+
+  /*
+    PIÈGE : le <header> porte backdrop-blur-xl. Un backdrop-filter crée un bloc
+    conteneur pour les descendants en position: fixed — le voile, pourtant en
+    inset: 0, se résolvait donc contre le header (64 px de haut) et ne couvrait
+    que le bandeau, laissant la page visible dessous.
+    Neutraliser le flou pendant l'ouverture rend le viewport au voile. Le flou du
+    header n'a de toute façon aucun intérêt quand un plein écran le recouvre.
+  */
+  header:has(.vx-drawer[open]) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Bouton hamburger : cible tactile 44×44 minimum. */
+  .vx-drawer__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .vx-drawer__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .vx-drawer__toggle:focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+  .vx-drawer__ico-close {
+    display: none;
+  }
+
+  /*
+    Ouvert : le <summary> passe en position fixe au-dessus du voile et devient
+    la croix de fermeture. C'est ce qui rend le volet fermable sans JavaScript,
+    le bouton d'origine étant recouvert par le plein écran.
+  */
+  .vx-drawer[open] > .vx-drawer__toggle {
+    position: fixed;
+    top: 0.75rem;
+    right: 1rem;
+    z-index: 10000;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .vx-drawer[open] > .vx-drawer__toggle .vx-drawer__ico-open {
+    display: none;
+  }
+  .vx-drawer[open] > .vx-drawer__toggle .vx-drawer__ico-close {
+    display: block;
+  }
+
+  /*
+    Voile plein écran. Le fond est opaque à 96 % AVANT tout flou : si
+    backdrop-filter est absent ou instable (Safari iOS), le panneau reste
+    lisible — c'est la règle de repli, pas une amélioration optionnelle.
+    z-index 9999 : le maximum utilisé ailleurs dans le projet est 100.
+  */
+  .vx-drawer__panel {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 5rem 1.5rem 2rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: rgba(10, 10, 18, 0.96);
+  }
+  @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+    .vx-drawer__panel {
+      background: rgba(10, 10, 18, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+
+  .vx-drawer__nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .vx-drawer__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .vx-drawer__link.is-active {
+    color: var(--color-cyan-text);
+  }
+  .vx-drawer__link:focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 4px;
+    border-radius: 0.375rem;
+  }
+  .vx-drawer__lock {
+    width: 0.8rem;
+    height: 0.8rem;
+    flex: none;
+    opacity: 0.7;
+  }
+
+  /* Bloc d'action : séparé de la navigation par un fond et une bordure. */
+  .vx-drawer__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .vx-drawer__actions-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-ink-faint);
+    text-align: center;
+  }
+
+  .vx-drawer[open] > .vx-drawer__panel {
+    animation: vx-drawer-in 0.22s ease-out;
+  }
+  @keyframes vx-drawer-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vx-drawer[open] > .vx-drawer__panel {
+      animation: none;
+    }
+  }
+
   /* Motif d'extrémité : micro-glow et rotation lente, décoratif uniquement. */
   .vx-orn {
     width: 1.6rem;
@@ -162,3 +329,84 @@ const isActive = (href: string) =>
     }
   }
 </style>
+
+<script>
+  /*
+    Confort du volet mobile. Le <details> gère déjà l'ouverture/fermeture et la
+    croix : sans ce script le menu reste pleinement utilisable. On ajoute ici le
+    verrou de défilement, la fermeture par Échap et le piège de focus.
+  */
+  const drawer = document.querySelector<HTMLDetailsElement>("[data-drawer]");
+
+  if (drawer) {
+    const toggle = drawer.querySelector<HTMLElement>(".vx-drawer__toggle");
+    const panel = drawer.querySelector<HTMLElement>(".vx-drawer__panel");
+    const large = window.matchMedia("(min-width: 1024px)");
+    let paddingPrecedent = "";
+
+    const focusables = () =>
+      Array.from(
+        panel?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [],
+      ).filter((el) => el.offsetParent !== null);
+
+    function verrouiller(): void {
+      // Compense la disparition de la barre de défilement pour éviter que la
+      // page ne saute latéralement à l'ouverture.
+      const gap = window.innerWidth - document.documentElement.clientWidth;
+      paddingPrecedent = document.body.style.paddingRight;
+      if (gap > 0) document.body.style.paddingRight = `${gap}px`;
+      document.body.style.overflow = "hidden";
+    }
+
+    function deverrouiller(): void {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = paddingPrecedent;
+    }
+
+    drawer.addEventListener("toggle", () => {
+      if (drawer.open) {
+        verrouiller();
+        focusables()[0]?.focus();
+      } else {
+        deverrouiller();
+        toggle?.focus();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (!drawer.open) return;
+
+      if (e.key === "Escape") {
+        drawer.open = false;
+        return;
+      }
+
+      // Piège de focus : la tabulation boucle à l'intérieur du volet tant
+      // qu'il est ouvert.
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (!items.length) return;
+      const premier = items[0];
+      const dernier = items[items.length - 1];
+      const actif = document.activeElement;
+
+      if (e.shiftKey && (actif === premier || actif === toggle)) {
+        e.preventDefault();
+        dernier.focus();
+      } else if (!e.shiftKey && actif === dernier) {
+        e.preventDefault();
+        premier.focus();
+      }
+    });
+
+    // Passage en grand écran (rotation, mode « version ordinateur ») : le volet
+    // n'a plus lieu d'être et laisserait le défilement verrouillé.
+    large.addEventListener("change", (e) => {
+      if (e.matches && drawer.open) drawer.open = false;
+    });
+
+    // Filet de sécurité : si la page est quittée volet ouvert, le style inline
+    // ne doit pas survivre à une restauration depuis le cache navigateur.
+    window.addEventListener("pagehide", deverrouiller);
+  }
+</script>

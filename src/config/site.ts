@@ -34,7 +34,9 @@ export const CONTACT = {
     display: "+33 7 58 18 76 75",
     e164: "+33758187675",
     waMe: "33758187675", // format wa.me (sans +)
-    sla: "Réponse < 2h (jours ouvrés, 9h–19h)",
+    // Pas de délai chiffré annoncé : seuls les horaires de disponibilité,
+    // qui sont vérifiables et n'engagent sur aucune promesse de réactivité.
+    sla: "Jours ouvrés, 9h–19h",
   },
   sms: {
     label: "SMS direct",

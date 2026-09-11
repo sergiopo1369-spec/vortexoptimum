@@ -6,6 +6,7 @@ import PackCard from "../components/PackCard.astro";
 import QuoteCalculator from "../components/QuoteCalculator.astro";
 import CalculateurTempsPerdu from "../components/CalculateurTempsPerdu.astro";
 import LogoGrid from "../components/LogoGrid.astro";
+import QuestionnaireRendezVous from "../components/QuestionnaireRendezVous.astro";
 import { PACKS } from "../config/pricing";
 import { SITE } from "../config/site";
 
@@ -66,6 +67,26 @@ const kpis = [
 
   <!-- Simulateur de pertes & diagnostic ROI -->
   <CalculateurTempsPerdu />
+
+  {/*
+    Placé juste après le simulateur de pertes : le visiteur vient de voir ce
+    que lui coûte son organisation, l'échange est la suite logique. Le
+    simulateur, lui, renvoie vers le devis — les deux actions se complètent.
+    Le questionnaire est posé ici en entier plutôt que derrière un lien : sur
+    téléphone la navigation est repliée dans le tiroir, et un lien passait
+    inaperçu. En fin de page il tombait à 11,7 écrans de défilement, contre
+    4,3 ici. La page /rendez-vous reste en place pour la nav et le pied.
+  */}
+  <section id="rendez-vous" class="container-page scroll-mt-24 py-12 sm:py-20">
+    <SectionHeading
+      eyebrow="Prendre rendez-vous"
+      title="Parlons de votre projet, gratuitement"
+      lead="Quatre questions, moins de deux minutes. Nous préparons l'échange à partir de vos réponses : en visioconférence, ou chez vous à Reims avec une démonstration en direct. Sans inscription et sans engagement."
+    />
+    <div class="mx-auto mt-12 max-w-3xl">
+      <QuestionnaireRendezVous />
+    </div>
+  </section>
 
   <!-- Modèle transparent : forfait mensuel tout compris -->
   <section
@@ -169,6 +190,5 @@ const kpis = [
       }
     </dl>
   </section>
-
 
 </BaseLayout>

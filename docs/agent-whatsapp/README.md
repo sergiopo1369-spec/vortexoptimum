@@ -7,8 +7,11 @@ structurée à l'équipe. **Il ne confirme aucun rendez-vous** : la confirmation
 reste humaine.
 
 - Le prompt système : [`prompt-systeme.md`](./prompt-systeme.md) — **la source, à éditer**
-- **Branchement, pas à pas : [`INSTALLATION.md`](./INSTALLATION.md)** — comptes à
-  créer et valeurs à coller dans Vercel. Le code, lui, est déjà écrit.
+- **Montage en production : [`MAKE.md`](./MAKE.md)** — le scénario Make, module
+  par module. C'est le chemin retenu.
+- [`INSTALLATION.md`](./INSTALLATION.md) — comptes Meta et Anthropic à créer
+  (étapes 1 à 3 et 6 à 7, valables quelle que soit l'orchestration) et
+  branchement de la fonction Vercel, gardée comme solution de repli.
 - Deux sorties **générées** depuis le prompt, à ne jamais éditer à la main :
   [`prompt-a-coller.txt`](./prompt-a-coller.txt) (version texte brut pour une
   console tierce) et `api/_lib/prompt.generated.ts` (celle que sert la fonction
@@ -29,20 +32,27 @@ reste humaine.
 | Brique | Choix | Pourquoi |
 |---|---|---|
 | Canal | **WhatsApp Cloud API** (Meta, direct) | Gratuit pour les conversations initiées par le client. Pas de revendeur type Wati/360dialog à payer tant que le volume est faible. |
-| Orchestration | **Fonction serverless Vercel** — [`api/whatsapp.ts`](../../api/whatsapp.ts) | Le projet y est déjà déployé : aucun compte, aucun abonnement et aucune interface tierce en plus. Le prompt, les garde-fous RGPD et les tests vivent dans le même dépôt, donc une modification du discours commercial et son test partent dans le même commit. |
+| Orchestration | **Make** — scénario décrit dans [`MAKE.md`](./MAKE.md) | Décision du 11/09/2026 : le compte était déjà monté et connecté à Meta. La fonction serverless [`api/whatsapp.ts`](../../api/whatsapp.ts) reste dans le dépôt, testée, comme implémentation de référence et solution de repli — Meta n'acceptant qu'une seule URL de rappel par application, les deux ne peuvent pas tourner ensemble. |
 | Modèle | **`claude-sonnet-5`** (variable `ANTHROPIC_MODEL`) | Le bon rapport qualité/latence/prix pour du conversationnel court. Le coût réel par conversation reste de l'ordre de quelques centimes. Le prompt système (≈ 9 000 jetons) est mis en cache : au-delà du premier message, il est facturé ~10 %. |
 | Mémoire | **Redis** (Vercel Storage / Upstash) | Historique par numéro + dédoublonnage des webhooks réémis par Meta. Sans lui, l'agent redemande le nom à chaque message. |
 | Mémoire CRM | **Notion** | Le connecteur est déjà actif sur ce poste. Évite de monter PocketBase/Supabase (§8) tant que le volume ne le justifie pas. Facultatif : l'agent fonctionne sans. |
 | Alerte | Message WhatsApp vers `TEAM_WHATSAPP_NUMBER` | Tu vois le lead arriver en temps réel sur ton téléphone. |
 
-**Écarté : n8n.** L'outil reste pertinent comme produit revendu en add-on
-« Booster IA » chez un client, mais pour notre propre canal il ajoutait un
-abonnement, une interface à maintenir à la main et un prompt recopié hors du
-dépôt — donc un deuxième endroit où la grille tarifaire peut diverger.
+**Ce que coûte le montage dans Make**, à avoir en tête plutôt qu'à découvrir :
+le prompt est recopié dans un Data store et les garde-fous RGPD sont posés à la
+main dans l'interface. La chaîne `pricing.ts` → prompt → production n'est donc
+plus automatique et aucun test ne la surveille. D'où les deux gestes d'entretien
+obligatoires en bas de [`MAKE.md`](./MAKE.md). En contrepartie, le scénario est
+visible et modifiable sans toucher au code, et il est réutilisable tel quel chez
+un client au titre de l'add-on « Booster IA » (140 € + 49 €/mois).
 
 ---
 
-## 2. Flux à monter
+## 2. Le flux, étape par étape
+
+Décrit ici tel qu'il est implémenté dans la fonction Vercel, qui sert de
+référence. Le scénario Make reproduit exactement les mêmes étapes, dans le même
+ordre — la correspondance module par module est dans [`MAKE.md`](./MAKE.md).
 
 ```
 WhatsApp (client)
@@ -122,8 +132,11 @@ deploye_en_ligne) · `escalade` (case) · `motif_escalade` (texte) ·
       23 tests dans `tests/agent-whatsapp.test.ts` (filtrage du bloc fiche,
       effacement des coordonnées sans consentement, signature Meta, découpage des
       messages longs). `npm run verify` : 76 tests verts, 0 erreur de types.
-- [ ] **Comptes et variables d'environnement** : suivre [`INSTALLATION.md`](./INSTALLATION.md)
-      (app Meta, jeton permanent, clé Anthropic, Redis, webhook).
+- [ ] **Scénario Make monté** : suivre [`MAKE.md`](./MAKE.md). Les deux points
+      qui ne pardonnent pas : la réponse au `GET` de vérification de Meta (§2) et
+      le retrait du bloc `FICHE_PROSPECT` avant l'envoi au prospect (§8).
+- [ ] **Comptes Meta et Anthropic** : étapes 1 à 3 de [`INSTALLATION.md`](./INSTALLATION.md)
+      (app Meta, jeton permanent, clé Anthropic créditée).
 - [ ] Numéro WhatsApp Business vérifié côté Meta.
 - [ ] Application Meta passée de « développement » à « en ligne »
       (vérification d'entreprise : compter quelques jours).

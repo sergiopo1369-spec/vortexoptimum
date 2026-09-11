@@ -1,4 +1,15 @@
-@import "tailwindcss";
+/*
+  La détection automatique des sources de Tailwind v4 balaie tout le dépôt.
+  Des fichiers de travail présents à la racine (pages web enregistrées .mhtml,
+  maquettes) contiennent alors des classes étrangères au site : le CSS généré
+  passait de 47 ko à 101 ko en local. Vercel n'en voyait rien — .vercelignore
+  les exclut de l'envoi — d'où un build local qui divergeait silencieusement
+  de la production. On restreint donc le balayage à src/, seule source réelle
+  de classes : le CSS est désormais identique quel que soit le contenu de la
+  racine.
+*/
+@import "tailwindcss" source(none);
+@source "../../src";
 
 /*
   Design system — « Dark Luxury Glassmorphism » (§5.3)

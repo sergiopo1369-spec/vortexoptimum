@@ -68,6 +68,8 @@ export const NAV: { href: string; label: string; lock?: boolean }[] = [
   { href: "/", label: "Accueil" },
   { href: "/offres", label: "Offres & tarifs" },
   { href: "/devis", label: "Devis en ligne" },
+  // Placé à côté du devis : ce sont les deux points de conversion du site.
+  { href: "/rendez-vous", label: "Rendez-vous" },
   { href: "/methode-contact", label: "Méthode & Contact" },
   { href: "/blog", label: "Blog" },
   // Écran public "Accès Verrouillé" (src/pages/3d/index.astro) : le vrai gate

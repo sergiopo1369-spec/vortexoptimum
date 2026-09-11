@@ -37,15 +37,23 @@ const isActive = (href: string) =>
       <span>{SITE.name}</span>
     </a>
 
+    {/*
+      Bascule à 1280 px et non 1024 : avec sept entrées, la nav horizontale
+      exige 735 px alors qu'il n'y en a que 560 de disponibles à 1024 — les
+      libellés se coupaient en deux lignes. En dessous, le tiroir plein écran
+      prend le relais, qui les présente mieux qu'une barre comprimée.
+      Les trois bascules (nav, boutons, tiroir) et le media query du script
+      doivent rester sur le même seuil.
+    */}
     <!-- Navigation bureau -->
-    <nav aria-label="Navigation principale" class="hidden items-center gap-1 lg:flex">
+    <nav aria-label="Navigation principale" class="hidden items-center gap-0.5 xl:flex">
       {
         NAV.map((item) => (
           <a
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
             class:list={[
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition-colors",
+              "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-1.5 py-2 text-sm transition-colors",
               isActive(item.href)
                 ? "text-[var(--color-cyan-text)]"
                 : "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]",
@@ -63,9 +71,9 @@ const isActive = (href: string) =>
     </nav>
 
     <!-- Actions bureau -->
-    <div class="hidden items-center gap-2 lg:flex">
-      <a class="btn btn-ghost text-sm" href="/devis">Devis rapide</a>
-      <a class="btn btn-whatsapp text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">💬 WhatsApp</a>
+    <div class="hidden items-center gap-2 xl:flex">
+      <a class="btn btn-ghost whitespace-nowrap text-sm" href="/devis">Devis rapide</a>
+      <a class="btn btn-whatsapp whitespace-nowrap text-sm" href={`https://wa.me/${CONTACT.whatsapp.waMe}`} rel="noopener" target="_blank">💬 WhatsApp</a>
 
       {/*
         Motif décoratif d'extrémité : purement ornemental, donc aria-hidden et hors
@@ -88,7 +96,7 @@ const isActive = (href: string) =>
       volet est ouvert (CSS pur), pour rester fermable même sans JS. Le script
       n'ajoute que le confort : verrou de défilement, Échap, piège de focus.
     */}
-    <details class="vx-drawer lg:hidden" data-drawer>
+    <details class="vx-drawer xl:hidden" data-drawer>
       <summary class="vx-drawer__toggle" aria-label="Ouvrir le menu">
         <svg class="vx-drawer__ico-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
@@ -338,7 +346,7 @@ const isActive = (href: string) =>
   if (drawer) {
     const toggle = drawer.querySelector<HTMLElement>(".vx-drawer__toggle");
     const panel = drawer.querySelector<HTMLElement>(".vx-drawer__panel");
-    const large = window.matchMedia("(min-width: 1024px)");
+    const large = window.matchMedia("(min-width: 1280px)");
     let paddingPrecedent = "";
 
     const focusables = () =>

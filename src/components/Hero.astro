@@ -42,8 +42,15 @@ const BG_640 = "/media/hero-bg-640.webp";
     ></div>
   </div>
 
+  {/*
+    Hauteur bornée par min(…, 50rem) : « Demander la version pour ordinateur »
+    sur téléphone rend la page dans une fenêtre virtuelle large mais très haute
+    (980 × 2119 sur un iPhone 13). Les unités svh s'y rapportent, et 86svh
+    donnait un hero de 1822 px — 721 px de vide avant le titre. Le plafond ne
+    change rien sur un vrai écran d'ordinateur (774 px à 1280 × 900).
+  */}
   <div
-    class="container-page relative z-10 grid min-h-[76svh] items-center gap-8 py-12 sm:min-h-[86svh] sm:gap-10 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
+    class="container-page relative z-10 grid min-h-[min(76svh,50rem)] items-center gap-8 py-12 sm:min-h-[min(86svh,50rem)] sm:gap-10 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12"
   >
     {/* relative z-10 : le texte reste au-dessus du réseau passé en fond sous lg. */}
     <div class="relative z-10 flex min-w-0 flex-col">

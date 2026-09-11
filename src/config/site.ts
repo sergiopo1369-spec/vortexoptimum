@@ -44,10 +44,11 @@ export const CONTACT = {
     e164: "+33745371862",
     sla: "Réponse < 1h (jours ouvrés, 9h–19h)",
   },
-  calcom: {
+  rendezvous: {
     label: "Audit Stratégique 15 min",
-    // TODO: lien Cal.com définitif
-    url: "https://cal.com/vortexoptim/decouverte",
+    // Questionnaire de qualification interne. Remplace un lien Cal.com
+    // jamais configuré, qui renvoyait un 404 en production.
+    url: "/rendez-vous",
     sla: "Diagnostic & faisabilité sous 24h — Sans engagement",
   },
   email: {

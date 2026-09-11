@@ -1,0 +1,860 @@
+---
+/*
+  Questionnaire de qualification & prise de rendez-vous — 4 étapes.
+
+  Écart assumé à l'arborescence suggérée (un fichier par étape) : le projet
+  n'utilise aucun framework d'îlots, la machine à états est donc du JS vanille.
+  Éclater le markup en cinq composants obligerait ce script unique à reconstituer
+  l'état à travers eux, sans rien gagner. Même parti pris que CalculateurTempsPerdu.
+
+  Envoi : WhatsApp et e-mail, comme le reste du site. Aucune persistance —
+  le micro-CRM (§8) n'existe pas encore et le site est en sortie statique, donc
+  une route API ne tournerait pas. Le point d'accroche est prêt dans
+  src/lib/rendezvous.ts (construireCharge).
+
+  Le progrès n'est volontairement pas conservé au rechargement : aucune donnée
+  personnelle ne doit traîner dans le navigateur avant consentement.
+*/
+import { CONTACT, SITE } from "../config/site";
+
+const SECTEURS = [
+  { v: "garage", l: "Garage / mécanique" },
+  { v: "coiffure", l: "Coiffure / esthétique" },
+  { v: "restauration", l: "Restauration" },
+  { v: "btp_artisanat", l: "BTP / artisanat" },
+  { v: "autre", l: "Autre activité" },
+];
+
+const SITUATIONS = [
+  { v: "site_actif", l: "J'ai déjà un site en ligne" },
+  { v: "depart_zero", l: "Je pars de zéro" },
+];
+
+const OBJECTIFS = [
+  { v: "creation", l: "Création d'un site professionnel" },
+  { v: "refonte", l: "Refonte de l'existant" },
+  { v: "acquisition", l: "Attirer plus de clients" },
+  { v: "ia", l: "Automatisation / accueil IA 24 h/24" },
+];
+
+const INTERETS = [
+  { v: "starter", l: "Pack Starter" },
+  { v: "pro", l: "Pack Pro Connecté" },
+  { v: "ultime", l: "Pack Ultime" },
+  { v: "booster", l: "Add-on Booster IA" },
+];
+
+const FORMATS = [
+  {
+    v: "visio",
+    l: "Visioconférence ou appel",
+    d: "15 minutes pour cadrer votre besoin, sans déplacement.",
+    icone: "🎧",
+  },
+  {
+    v: "presentiel",
+    l: "Visite sur place avec démo",
+    d: "Nous venons dans votre local, démonstration en direct. Reims et 15 km alentour.",
+    icone: "📍",
+  },
+];
+
+const CRENEAUX = [
+  { v: "matin", l: "Matin", d: "09 h 00 – 14 h 00" },
+  { v: "apresmidi", l: "Après-midi", d: "14 h 00 – 19 h 00" },
+];
+
+/* Libellés sérialisés pour que le script compose le récapitulatif en clair. */
+const LIBELLES = Object.fromEntries(
+  [...SECTEURS, ...SITUATIONS, ...OBJECTIFS, ...INTERETS, ...FORMATS, ...CRENEAUX].map((o) => [
+    o.v,
+    o.l,
+  ]),
+);
+
+const ETAPES = [
+  "Identification",
+  "Votre activité",
+  "Format du rendez-vous",
+  "Disponibilité",
+];
+---
+
+<section id="rdv" class="rdv" aria-labelledby="rdv-titre">
+  <div class="rdv__shell">
+    <!-- Progression -->
+    <div class="rdv__head">
+      <p id="rdv-progress" class="rdv__step-label">Étape 1 sur 4 — {ETAPES[0]}</p>
+      <ol class="rdv__bars" aria-hidden="true">
+        {ETAPES.map((_, i) => <li class="rdv__bar" data-bar={i + 1} data-on={i === 0 ? "true" : "false"}></li>)}
+      </ol>
+    </div>
+
+    <h2 id="rdv-titre" class="sr-only">Demande de rendez-vous en quatre étapes</h2>
+
+    <form id="rdv-form" novalidate>
+      <!-- Le changement d'étape est annoncé aux lecteurs d'écran. -->
+      <p class="sr-only" aria-live="polite" data-annonce></p>
+
+      {/* ---------------- Étape 1 ---------------- */}
+      <fieldset class="rdv__panel" data-etape="1">
+        <legend class="rdv__legend">Comment vous joindre&nbsp;?</legend>
+
+        <div class="rdv__field">
+          <label for="rdv-nom">Nom complet</label>
+          <input id="rdv-nom" name="nomComplet" type="text" autocomplete="name" maxlength="120"
+            aria-describedby="err-nomComplet" />
+          <p class="rdv__err" id="err-nomComplet" data-err="nomComplet"></p>
+        </div>
+
+        <div class="rdv__field">
+          <label for="rdv-tel">Téléphone WhatsApp</label>
+          <input id="rdv-tel" name="telephone" type="tel" inputmode="tel" autocomplete="tel"
+            placeholder="+33 6 12 34 56 78" aria-describedby="aide-tel err-telephone" />
+          <p class="rdv__hint" id="aide-tel">Format international, indicatif compris.</p>
+          <p class="rdv__err" id="err-telephone" data-err="telephone"></p>
+        </div>
+
+        <div class="rdv__field">
+          <label for="rdv-email">Adresse e-mail</label>
+          <input id="rdv-email" name="email" type="email" inputmode="email" autocomplete="email"
+            placeholder="prenom@exemple.fr" aria-describedby="err-email" />
+          <p class="rdv__err" id="err-email" data-err="email"></p>
+        </div>
+      </fieldset>
+
+      {/* ---------------- Étape 2 ---------------- */}
+      <fieldset class="rdv__panel" data-etape="2" hidden>
+        <legend class="rdv__legend">Parlez-nous de votre activité</legend>
+
+        <div class="rdv__field">
+          <label for="rdv-secteur">Secteur</label>
+          <select id="rdv-secteur" name="secteur" aria-describedby="err-secteur">
+            <option value="">Choisissez votre secteur…</option>
+            {SECTEURS.map((s) => <option value={s.v}>{s.l}</option>)}
+          </select>
+          <p class="rdv__err" id="err-secteur" data-err="secteur"></p>
+        </div>
+
+        <fieldset class="rdv__group" aria-describedby="err-situation">
+          <legend>Où en êtes-vous&nbsp;?</legend>
+          <div class="rdv__opts">
+            {SITUATIONS.map((s) => (
+              <label class="rdv__opt">
+                <input type="radio" name="situation" value={s.v} />
+                <span>{s.l}</span>
+              </label>
+            ))}
+          </div>
+          <p class="rdv__err" id="err-situation" data-err="situation"></p>
+        </fieldset>
+
+        <fieldset class="rdv__group" aria-describedby="err-objectifs">
+          <legend>Vos objectifs <span class="rdv__opt-note">(plusieurs choix possibles)</span></legend>
+          <div class="rdv__opts">
+            {OBJECTIFS.map((o) => (
+              <label class="rdv__opt">
+                <input type="checkbox" name="objectifs" value={o.v} />
+                <span>{o.l}</span>
+              </label>
+            ))}
+          </div>
+          <p class="rdv__err" id="err-objectifs" data-err="objectifs"></p>
+        </fieldset>
+
+        <div class="rdv__field">
+          <label for="rdv-interet">Formule envisagée <span class="rdv__opt-note">(facultatif)</span></label>
+          <select id="rdv-interet" name="interet">
+            <option value="">Je ne sais pas encore</option>
+            {INTERETS.map((i) => <option value={i.v}>{i.l}</option>)}
+          </select>
+        </div>
+      </fieldset>
+
+      {/* ---------------- Étape 3 ---------------- */}
+      <fieldset class="rdv__panel" data-etape="3" hidden>
+        <legend class="rdv__legend">Comment souhaitez-vous qu'on se rencontre&nbsp;?</legend>
+
+        <div class="rdv__cards" role="group" aria-describedby="err-typeReunion">
+          {FORMATS.map((f) => (
+            <label class="rdv__card">
+              <input type="radio" name="typeReunion" value={f.v} />
+              <span class="rdv__card-ico" aria-hidden="true">{f.icone}</span>
+              <span class="rdv__card-body">
+                <span class="rdv__card-title">{f.l}</span>
+                <span class="rdv__card-desc">{f.d}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <p class="rdv__err" id="err-typeReunion" data-err="typeReunion"></p>
+
+        {/* Révélé uniquement si le présentiel est choisi. */}
+        <div class="rdv__field" data-si-presentiel hidden>
+          <label for="rdv-lieu">Adresse du rendez-vous</label>
+          <input id="rdv-lieu" name="lieu" type="text" autocomplete="street-address"
+            placeholder="Adresse ou zone du local (Reims et alentours)" aria-describedby="err-lieu" />
+          <p class="rdv__err" id="err-lieu" data-err="lieu"></p>
+        </div>
+      </fieldset>
+
+      {/* ---------------- Étape 4 ---------------- */}
+      <fieldset class="rdv__panel" data-etape="4" hidden>
+        <legend class="rdv__legend">Quand êtes-vous disponible&nbsp;?</legend>
+
+        <fieldset class="rdv__group" aria-describedby="err-creneau">
+          <legend>Plage horaire <span class="rdv__opt-note">(du lundi au vendredi)</span></legend>
+          <div class="rdv__opts">
+            {CRENEAUX.map((c) => (
+              <label class="rdv__opt">
+                <input type="radio" name="creneau" value={c.v} />
+                <span>{c.l} <span class="rdv__opt-note">{c.d}</span></span>
+              </label>
+            ))}
+          </div>
+          <p class="rdv__err" id="err-creneau" data-err="creneau"></p>
+        </fieldset>
+
+        <div class="rdv__field">
+          <label for="rdv-date">Date souhaitée</label>
+          <input id="rdv-date" name="date" type="date" aria-describedby="aide-date err-date" />
+          <p class="rdv__hint" id="aide-date">Jours ouvrés uniquement&nbsp;; nous confirmons l'heure exacte par WhatsApp.</p>
+          <p class="rdv__err" id="err-date" data-err="date"></p>
+        </div>
+
+        <div class="rdv__consent">
+          <label class="rdv__opt rdv__opt--consent">
+            <input type="checkbox" name="consentement" aria-describedby="err-consentement" />
+            <span>
+              J'accepte que mes données soient traitées pour le suivi de ma demande et d'être
+              recontacté·e par {SITE.name} à ce sujet. Je peux exercer mes droits d'accès, de
+              rectification et de suppression à tout moment. Voir la
+              <a class="link-underline" href="/politique-de-confidentialite">politique de confidentialité</a>.
+            </span>
+          </label>
+          <p class="rdv__err" id="err-consentement" data-err="consentement"></p>
+        </div>
+      </fieldset>
+
+      {/* ---------------- Navigation ---------------- */}
+      <div class="rdv__nav">
+        <button type="button" class="btn btn-ghost" data-prec hidden>← Retour</button>
+        <button type="button" class="btn btn-primary" data-suiv>Continuer →</button>
+        <button type="submit" class="btn btn-primary" data-envoi hidden aria-describedby="rdv-blocage">
+          <span data-envoi-texte>Envoyer ma demande</span>
+        </button>
+        <p id="rdv-blocage" class="rdv__hint" data-blocage hidden>
+          Cochez la case de consentement pour activer l'envoi.
+        </p>
+      </div>
+    </form>
+
+    {/* ---------------- Confirmation ---------------- */}
+    <div class="rdv__ok" data-confirmation hidden>
+      <p class="rdv__ok-ico" aria-hidden="true">✓</p>
+      <h3 class="rdv__ok-title">Votre demande est prête</h3>
+      <p class="rdv__ok-lead">
+        WhatsApp a dû s'ouvrir dans un nouvel onglet avec votre récapitulatif. S'il ne s'est
+        rien passé, utilisez l'un des deux boutons ci-dessous.
+      </p>
+      <div class="rdv__ok-actions">
+        <a class="btn btn-whatsapp" data-lien-wa href="#" rel="noopener" target="_blank">💬 Envoyer sur WhatsApp</a>
+        <a class="btn btn-ghost" data-lien-mail href="#">Envoyer par e-mail</a>
+      </div>
+      <details class="rdv__recap">
+        <summary>Voir le récapitulatif</summary>
+        <pre data-recap></pre>
+      </details>
+      <button type="button" class="btn btn-ghost rdv__restart" data-recommencer>Faire une nouvelle demande</button>
+    </div>
+  </div>
+
+  <script
+    is:inline
+    type="application/json"
+    id="rdv-config"
+    set:html={JSON.stringify({ libelles: LIBELLES, etapes: ETAPES, wa: CONTACT.whatsapp.waMe, email: SITE.email })}
+  />
+</section>
+
+<style>
+  .rdv {
+    --rdv-erreur: #fca5a5; /* 7,3:1 sur #080c14 — AA largement tenu */
+  }
+  .rdv__shell {
+    position: relative;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    padding: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .rdv__shell {
+      padding: 2rem;
+    }
+  }
+
+  /* Progression */
+  .rdv__head {
+    margin-bottom: 1.5rem;
+  }
+  .rdv__step-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--color-cyan-text);
+  }
+  .rdv__bars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    list-style: none;
+    padding: 0;
+  }
+  .rdv__bar {
+    height: 3px;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.22);
+    transition: background-color 0.3s ease;
+  }
+  .rdv__bar[data-on="true"] {
+    background: linear-gradient(90deg, #00e5ff, #8b5cf6);
+  }
+
+  /* Panneaux d'étape : hauteur minimale stable, pas de saut entre étapes. */
+  .rdv__panel {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-height: 22rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .rdv__panel:not([hidden]) {
+    animation: rdv-in 0.24s ease-out;
+  }
+  @keyframes rdv-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .rdv__legend {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    padding: 0;
+    margin-bottom: 0.25rem;
+    /* float : une <legend> se place sinon dans l'encoche de bordure du
+       fieldset et déborde dès qu'elle passe sur deux lignes. */
+    float: left;
+    width: 100%;
+  }
+  .rdv__legend + * {
+    clear: both;
+  }
+
+  /* Champs */
+  .rdv__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .rdv__field > label,
+  .rdv__group > legend {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .rdv__group {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .rdv__group > legend {
+    margin-bottom: 0.5rem;
+  }
+  .rdv__opt-note {
+    font-weight: 400;
+    color: var(--color-ink-faint);
+  }
+
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="date"],
+  select {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  /* Le gris par défaut du placeholder tombe sous AA sur #080c14. */
+  input::placeholder {
+    color: #8c99ad;
+    opacity: 1;
+  }
+  input:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: var(--color-cyan);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25);
+  }
+  input[aria-invalid="true"],
+  select[aria-invalid="true"] {
+    border-color: var(--rdv-erreur);
+  }
+  /* Icône native du sélecteur de date, illisible sur fond sombre sans cela. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.6;
+    cursor: pointer;
+  }
+
+  .rdv__hint {
+    font-size: 0.72rem;
+    color: var(--color-ink-muted);
+  }
+  .rdv__err {
+    font-size: 0.75rem;
+    color: var(--rdv-erreur);
+    min-height: 1rem;
+  }
+  .rdv__err:empty {
+    display: none;
+  }
+
+  /* Options radio / cases */
+  .rdv__opts {
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 640px) {
+    .rdv__opts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .rdv__opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.87rem;
+    color: var(--color-ink);
+    cursor: pointer;
+    /* Cible tactile confortable même sur une option d'une seule ligne. */
+    min-height: 44px;
+    transition: border-color 0.18s ease, background-color 0.18s ease;
+  }
+  .rdv__opt:hover {
+    border-color: rgba(34, 211, 238, 0.45);
+  }
+  .rdv__opt input {
+    margin-top: 0.15rem;
+    accent-color: #22d3ee;
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+  }
+  .rdv__opt:has(input:checked) {
+    border-color: var(--color-cyan);
+    background: rgba(34, 211, 238, 0.08);
+  }
+  .rdv__opt:has(input:focus-visible) {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+
+  /* Cartes de format : toute la surface est cliquable. */
+  .rdv__cards {
+    display: grid;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .rdv__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .rdv__card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+  }
+  .rdv__card:hover {
+    border-color: rgba(34, 211, 238, 0.45);
+    transform: translateY(-2px);
+  }
+  .rdv__card:has(input:checked) {
+    border-color: var(--color-cyan);
+    background: rgba(34, 211, 238, 0.09);
+  }
+  .rdv__card:has(input:focus-visible) {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+  .rdv__card input {
+    margin-top: 0.2rem;
+    accent-color: #22d3ee;
+    flex: none;
+  }
+  .rdv__card-ico {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .rdv__card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .rdv__card-title {
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .rdv__card-desc {
+    font-size: 0.78rem;
+    color: var(--color-ink-muted);
+    line-height: 1.45;
+  }
+
+  .rdv__consent {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+  }
+  .rdv__opt--consent {
+    align-items: flex-start;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--color-ink-muted);
+  }
+
+  /* Navigation */
+  .rdv__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .rdv__nav .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  @media (min-width: 640px) {
+    .rdv__nav .btn {
+      flex: 0 0 auto;
+    }
+    .rdv__nav [data-suiv],
+    .rdv__nav [data-envoi] {
+      margin-left: auto;
+    }
+  }
+  .btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .rdv__nav [data-blocage] {
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  /* Confirmation */
+  .rdv__ok {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+  }
+  .rdv__ok-ico {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    background: rgba(52, 211, 153, 0.14);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    color: var(--color-emerald-text);
+    font-size: 1.3rem;
+  }
+  .rdv__ok-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .rdv__ok-lead {
+    max-width: 34rem;
+    font-size: 0.85rem;
+    color: var(--color-ink-muted);
+  }
+  .rdv__ok-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+  .rdv__recap {
+    width: 100%;
+    max-width: 34rem;
+    text-align: left;
+    font-size: 0.78rem;
+  }
+  .rdv__recap > summary {
+    cursor: pointer;
+    color: var(--color-ink-muted);
+    padding: 0.4rem 0;
+  }
+  .rdv__recap pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 0.85rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-border);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--color-ink-muted);
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+  .rdv__restart {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rdv__panel:not([hidden]) {
+      animation: none;
+    }
+    .rdv__card,
+    .rdv__opt,
+    .rdv__bar {
+      transition: none;
+    }
+    .rdv__card:hover {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import {
+    validerEtape,
+    construireRecap,
+    lienWhatsApp,
+    lienEmail,
+    premierJourOuvre,
+    type Demande,
+    type Erreurs,
+  } from "../lib/rendezvous";
+
+  const brut = document.getElementById("rdv-config")?.textContent;
+  const form = document.getElementById("rdv-form") as HTMLFormElement | null;
+
+  if (brut && form) {
+    const cfg = JSON.parse(brut) as {
+      libelles: Record<string, string>;
+      etapes: string[];
+      wa: string;
+      email: string;
+    };
+
+    const $ = <T extends Element>(s: string) => form.querySelector<T>(s);
+    const racine = form.closest(".rdv") as HTMLElement;
+    const panneaux = Array.from(form.querySelectorAll<HTMLElement>("[data-etape]"));
+    const barres = Array.from(racine.querySelectorAll<HTMLElement>("[data-bar]"));
+    const progression = document.getElementById("rdv-progress")!;
+    const annonce = form.querySelector<HTMLElement>("[data-annonce]")!;
+    const btnPrec = $<HTMLButtonElement>("[data-prec]")!;
+    const btnSuiv = $<HTMLButtonElement>("[data-suiv]")!;
+    const btnEnvoi = $<HTMLButtonElement>("[data-envoi]")!;
+    const blocage = $<HTMLElement>("[data-blocage]")!;
+    const blocLieu = $<HTMLElement>("[data-si-presentiel]")!;
+    const confirmation = racine.querySelector<HTMLElement>("[data-confirmation]")!;
+
+    let etape = 1;
+
+    /* -------------------------------------------------------------- *
+       Lecture de l'état depuis le DOM : le formulaire EST l'état, on
+       évite de maintenir un miroir qui pourrait diverger.
+     * -------------------------------------------------------------- */
+    function lire(): Demande {
+      const d = new FormData(form!);
+      return {
+        nomComplet: String(d.get("nomComplet") ?? ""),
+        telephone: String(d.get("telephone") ?? ""),
+        email: String(d.get("email") ?? ""),
+        secteur: String(d.get("secteur") ?? ""),
+        situation: String(d.get("situation") ?? ""),
+        objectifs: d.getAll("objectifs").map(String),
+        interet: String(d.get("interet") ?? ""),
+        typeReunion: String(d.get("typeReunion") ?? ""),
+        lieu: String(d.get("lieu") ?? ""),
+        creneau: String(d.get("creneau") ?? ""),
+        date: String(d.get("date") ?? ""),
+        consentement: d.get("consentement") === "on",
+      };
+    }
+
+    function afficherErreurs(e: Erreurs): void {
+      form!.querySelectorAll<HTMLElement>("[data-err]").forEach((el) => {
+        const champ = el.dataset.err!;
+        const message = (e as Record<string, string | undefined>)[champ];
+        el.textContent = message ?? "";
+        const input = form!.querySelector<HTMLElement>(`[name="${champ}"]`);
+        if (input) input.setAttribute("aria-invalid", message ? "true" : "false");
+      });
+    }
+
+    function majEnvoi(): void {
+      const ok = lire().consentement;
+      btnEnvoi.setAttribute("aria-disabled", ok ? "false" : "true");
+      blocage.hidden = ok;
+    }
+
+    function montrer(n: number, focus = true): void {
+      etape = n;
+      panneaux.forEach((p) => {
+        p.hidden = Number(p.dataset.etape) !== n;
+      });
+      barres.forEach((b) => {
+        b.dataset.on = String(Number(b.dataset.bar) <= n);
+      });
+
+      const titre = `Étape ${n} sur 4 — ${cfg.etapes[n - 1]}`;
+      progression.textContent = titre;
+      annonce.textContent = titre;
+
+      btnPrec.hidden = n === 1;
+      btnSuiv.hidden = n === 4;
+      btnEnvoi.hidden = n !== 4;
+      blocage.hidden = n !== 4;
+      if (n === 4) majEnvoi();
+
+      afficherErreurs({});
+      if (focus) {
+        const premier = panneaux[n - 1].querySelector<HTMLElement>(
+          "input:not([type=hidden]), select",
+        );
+        premier?.focus();
+      }
+    }
+
+    /* Validation au blur : le visiteur corrige au fil de l'eau. */
+    form.addEventListener(
+      "blur",
+      (ev) => {
+        const cible = ev.target as HTMLElement;
+        const nom = cible.getAttribute?.("name");
+        if (!nom) return;
+        const e = validerEtape(etape, lire());
+        const message = (e as Record<string, string | undefined>)[nom];
+        const bloc = form.querySelector<HTMLElement>(`[data-err="${nom}"]`);
+        if (bloc) bloc.textContent = message ?? "";
+        cible.setAttribute("aria-invalid", message ? "true" : "false");
+      },
+      true,
+    );
+
+    form.addEventListener("change", (ev) => {
+      const cible = ev.target as HTMLInputElement;
+      if (cible.name === "typeReunion") {
+        blocLieu.hidden = cible.value !== "presentiel";
+      }
+      if (cible.name === "consentement") majEnvoi();
+    });
+
+    btnSuiv.addEventListener("click", () => {
+      const e = validerEtape(etape, lire());
+      if (Object.keys(e).length) {
+        afficherErreurs(e);
+        form.querySelector<HTMLElement>(`[name="${Object.keys(e)[0]}"]`)?.focus();
+        return;
+      }
+      montrer(etape + 1);
+    });
+
+    btnPrec.addEventListener("click", () => montrer(etape - 1));
+
+    // Entrée passe à l'étape suivante plutôt que de soumettre prématurément.
+    form.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      const cible = ev.target as HTMLElement;
+      if (cible.tagName === "TEXTAREA" || cible.getAttribute("type") === "submit") return;
+      if (etape < 4) {
+        ev.preventDefault();
+        btnSuiv.click();
+      }
+    });
+
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const d = lire();
+      const e = validerEtape(4, d);
+      if (Object.keys(e).length) {
+        afficherErreurs(e);
+        form.querySelector<HTMLElement>(`[name="${Object.keys(e)[0]}"]`)?.focus();
+        return;
+      }
+
+      const recap = construireRecap(d, cfg.libelles);
+      const wa = lienWhatsApp(cfg.wa, recap);
+
+      racine.querySelector<HTMLAnchorElement>("[data-lien-wa]")!.href = wa;
+      racine.querySelector<HTMLAnchorElement>("[data-lien-mail]")!.href = lienEmail(
+        cfg.email,
+        d,
+        recap,
+      );
+      racine.querySelector<HTMLElement>("[data-recap]")!.textContent = recap;
+
+      /*
+        WhatsApp est le canal primaire : on l'ouvre tout de suite. Si le
+        navigateur bloque la fenêtre, la confirmation affiche les deux liens
+        en repli — la conversion n'est jamais perdue.
+      */
+      window.open(wa, "_blank", "noopener");
+
+      form.hidden = true;
+      confirmation.hidden = false;
+      confirmation.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    racine.querySelector<HTMLButtonElement>("[data-recommencer]")!.addEventListener("click", () => {
+      form.reset();
+      blocLieu.hidden = true;
+      confirmation.hidden = true;
+      form.hidden = false;
+      montrer(1);
+    });
+
+    // Bornes du sélecteur de date : pas de passé. Les week-ends restent
+    // refusés par la validation, aucun attribut HTML ne permet de les exclure.
+    const champDate = $<HTMLInputElement>('[name="date"]')!;
+    champDate.min = premierJourOuvre();
+
+    montrer(1, false);
+  }
+</script>

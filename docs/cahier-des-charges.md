@@ -1,7 +1,7 @@
 ---
 titre: "Cahier des Charges Maître — Agence Digitale & Ingénierie IA de Proximité"
 zone: "Reims & Grand Est"
-version: "2.0.0"
+version: "2.2.0"
 statut: "Validé pour exécution"
 date_edition: "2026-09-08"
 auteur: "[NOM_AGENCE]"
@@ -86,7 +86,7 @@ En l'absence d'un ou plusieurs éléments, le délai démarre à réception du d
 | Cal.com | Module de prise de RDV intégré | Appel découverte de 15 min sans friction | Créneau sous 72h |
 | Email | À définir (adresse professionnelle dédiée) | Demandes contractuelles, factures | < 24h ouvrées |
 
-En dehors des horaires listés, la réponse intervient au prochain jour ouvré, sauf souscription à l'option **Assistant IA 24/7** (section 4.A.3), qui couvre l'accueil et la qualification hors horaires humains — sans se substituer au SLA humain ci-dessus.
+En dehors des horaires listés, la réponse intervient au prochain jour ouvré, sauf souscription à l'option **Assistant IA 24/7** (section 4.B, comprise dans le Pack Ultime 4.A.3), qui couvre l'accueil et la qualification hors horaires humains — sans se substituer au SLA humain ci-dessus.
 
 ---
 
@@ -111,24 +111,33 @@ Ces objectifs cadrent la réussite du projet côté agence et côté client ; il
 
 > **Règle de gouvernance des prix :** tout prix affiché ci-dessous est HT ou TTC selon le statut fiscal de l'agence — à préciser une fois pour toutes en en-tête de chaque devis. Les tarifs mensuels sont sans engagement de durée minimale sauf mention contraire au contrat-cadre (voir 4.C).
 
+> **⚠️ Source de vérité unique.** La grille ci-dessous est la transcription du
+> fichier `src/config/pricing.ts` du site, qui fait foi en cas d'écart. Toute
+> modification tarifaire se fait **d'abord** dans `pricing.ts` (couvert par le test
+> de non-régression `tests/pricing.test.ts`), puis est répercutée ici et dans le
+> prompt de l'assistant WhatsApp (`docs/agent-whatsapp/prompt-systeme.md` §2.3)
+> **le jour même**. Aucun autre support — plaquette, ancien devis, capture d'écran —
+> ne peut être opposé à l'agence.
+
 ### A. Les Packs Clé en Main
 
+Choix de base **mutuellement exclusifs** : un devis ne comporte jamais deux packs.
+
 #### A.1 — Pack Starter (Vitrine & Visibilité Locale)
-**190 € installation + 19 €/mois**
+**390 € installation + 39 €/mois**
 
 Inclus :
 - Site vitrine responsive haute vitesse (mobile-first, optimisé Core Web Vitals — cibles section 3).
 - Nom de domaine personnalisé (1 an) + hébergement sécurisé SSL haute disponibilité.
 - SEO local : optimisation sémantique ciblée Reims + synchronisation Google Business Profile (Google Maps).
 - Formulaire de contact sécurisé (anti-spam), boutons d'appel, WhatsApp et SMS directs.
-- 🎁 Arrière-plan animé / vidéo 3D immersive en page d'accueil (valeur 49 €).
 - 🎁 Espace privé client sécurisé (valeur 49 €).
 - 🚗 Déplacement sur site inclus dans un rayon de 15 km.
 
 **Exclu (à proposer en upsell) :** rédaction de contenu long format, prise de vue drone, traduction multilingue.
 
 #### A.2 — Pack Pro Connecté (Agenda & Réservations Automatisées)
-**299 € installation + 19 €/mois**
+**690 € installation + 59 €/mois** — *le plus populaire*
 
 Tout le contenu du Pack Starter, plus :
 - Module de prise de RDV / réservation connecté.
@@ -136,20 +145,50 @@ Tout le contenu du Pack Starter, plus :
 - Passerelle vers outils tiers déjà utilisés (Planity, Treatwell...) ou solution native (Cal.com).
 - Notifications automatiques de confirmation et rappels (réduction des no-shows — cible KPI section 3).
 
-#### A.3 — Option Booster IA / Assistant 24/7 (add-on)
-**+49 € installation + 20 €/mois**
+Offerts, comme au Pack Starter : espace privé client sécurisé (valeur 49 €) et déplacement sur site dans un rayon de 15 km.
 
-- Déploiement et entraînement sur-mesure d'un agent conversationnel IA (WhatsApp et/ou widget web).
-- Qualification automatique des prospects, réponses aux questions fréquentes, tarifs, disponibilités, 24h/24 7j/7.
-- **Limite contractuelle à préciser au client :** l'agent IA ne prend pas d'engagement financier ferme au nom du client et redirige vers un humain pour toute demande hors périmètre (litige, réclamation, urgence sécurité).
+**Exclu (à proposer en upsell) :** rédaction de contenu long format, prise de vue drone, traduction multilingue.
+
+#### A.3 — Pack Ultime (Tout-en-un & Automatisation IA)
+**990 € installation + 199 €/mois** — *solution complète*
+
+Tout le contenu du Pack Pro Connecté, plus :
+- Assistant IA 24/7 sur WhatsApp et sur le site web (option `ia` incluse).
+- Module Devis Express avec scan photo (option `devis-express` incluse).
+- Boutique en ligne & paiement CB sécurisé — Stripe (option `boutique` incluse).
+- Gestion publicitaire locale Google Ads & Meta Ads (option `ads` incluse).
+- 🚗 Déplacement sur site inclus (Reims et 15 km).
+- 🎁 Audit & configuration de l'assistant IA offerts (valeur 190 €).
+- 🎁 Espace privé client sécurisé (valeur 49 €).
+
+**Règle du calculateur (§5.2) :** ce pack est *tout-inclus*. Les quatre options
+ci-dessus y sont verrouillées et ne génèrent **aucun supplément** — le total affiché
+est strictement celui du pack. Prix « à la carte » équivalent, à afficher barré comme
+argument d'économie : **1 240 € + 222 €/mois**.
+
+**Exclu (à proposer en devis séparé) :** production vidéo / drone, rédaction éditoriale au long cours, développements sur-mesure hors périmètre.
 
 ### B. Configurateur de devis « à la carte » (options modulaires)
 
+Cumulables avec les packs Starter et Pro Connecté. Déjà comprises dans le Pack Ultime (voir A.3).
+
 | Option | Coût initial | Coût mensuel | Description |
 |---|---|---|---|
-| Module Devis Express avec upload photo | +80 € | 0 € | Réception immédiate de photos (carte grise, panne, modèle) pour devis rapide — garages, salons, artisans. |
-| Boutique en ligne & paiement CB sécurisé | +150 € | +10 €/mois | Stripe, Apple Pay, Google Pay, gestion des commandes, Click & Collect. |
-| Gestion publicitaire locale (Google Ads / Meta Ads) | +90 € | +30 €/mois | Campagnes géolocalisées Reims, pixel de suivi, optimisation des enchères, reporting mensuel du coût par prospect. |
+| Booster IA / Assistant 24/7 | +140 € | +49 €/mois | Agent conversationnel IA sur-mesure (WhatsApp et/ou widget web) : qualification des prospects, réponses aux questions fréquentes, tarifs, disponibilités, 24h/24 7j/7. |
+| Module Devis Express avec upload photo | +70 € | +15 €/mois | Réception immédiate de photos (carte grise, panne, modèle) pour devis rapide — garages, salons, artisans. |
+| Boutique en ligne & paiement CB sécurisé | +240 € | +29 €/mois | Stripe, Apple Pay, Google Pay, gestion des commandes, Click & Collect. Aucune donnée bancaire stockée en base propre (délégation intégrale à Stripe). |
+| Gestion publicitaire locale (Google Ads / Meta Ads) | +100 € | +70 €/mois | Campagnes géolocalisées Reims, pixel de suivi (soumis au consentement cookies — §7.1), optimisation des enchères, reporting mensuel du coût par prospect. |
+| Déplacement au-delà de 15 km | sur devis | — | Barème kilométrique fiscal en vigueur + temps de trajet facturé à la demi-heure. Chiffré au devis, exclu du total du calculateur. |
+
+**Budget média :** l'option Ads couvre la **gestion** des campagnes. Le budget
+publicitaire versé à Google ou à Meta est payé directement par le client et n'est
+compris dans aucun tarif ci-dessus. À énoncer systématiquement en rendez-vous.
+
+**Limite contractuelle de l'assistant IA, à préciser au client :** l'agent IA ne
+prend pas d'engagement financier ferme au nom du client, ne confirme aucun
+rendez-vous sans validation humaine, et redirige vers un humain pour toute demande
+hors périmètre (litige, réclamation, urgence sécurité). Garde-fous complets :
+`docs/agent-whatsapp/prompt-systeme.md` §5.
 
 ### C. Conditions commerciales générales (à formaliser en CGV séparées)
 
@@ -206,7 +245,7 @@ Tout le contenu du Pack Starter, plus :
 | Base de données CRM | PocketBase ou Supabase | Léger, auto-hébergeable ou managé, adapté au volume TPE/PME. |
 | Paiement | Stripe (+ Apple Pay / Google Pay) | Conformité PCI-DSS déléguée au prestataire, pas de manipulation de données bancaires en direct. |
 | RDV / Agenda | Cal.com natif ou passerelle Planity/Treatwell | Double option selon les outils déjà utilisés par le client. |
-| IA conversationnelle | Agent entraîné sur WhatsApp Business API et/ou widget web | Voir limites contractuelles section 4.A.3. |
+| IA conversationnelle | Agent entraîné sur WhatsApp Business API et/ou widget web | Voir limites contractuelles section 4.B. |
 
 ### 6.2 Budget de performance (non négociable en recette)
 
@@ -389,7 +428,7 @@ Planning de référence pour un Pack Starter ou Pro Connecté, à ajuster selon 
 | Dérive du périmètre ("scope creep") sur le sur-mesure | Élevée | Moyen | Toute demande hors périmètre du pack fait l'objet d'un avenant chiffré avant exécution |
 | Rendu visuel dégradé sur iOS Safari (glassmorphism) | Moyenne | Faible | Test dédié obligatoire (section 6.3 et 11) |
 | Dépendance à un seul développeur/agence (bus factor) | Moyenne | Élevé | Documentation technique à jour + accès hébergement/domaine partagés avec le client |
-| Sur-sollicitation de l'agent IA hors périmètre (conseil juridique, litige) | Faible | Moyen | Garde-fous conversationnels + redirection humaine (clause 4.A.3) |
+| Sur-sollicitation de l'agent IA hors périmètre (conseil juridique, litige) | Faible | Moyen | Garde-fous conversationnels + redirection humaine (clause 4.B ; règles détaillées `docs/agent-whatsapp/prompt-systeme.md` §5) |
 
 ---
 
@@ -445,6 +484,7 @@ Un livrable n'est considéré "Déployé & En Ligne" (section 8, `statut_projet`
 | 1.0 | Antérieure | Dossier stratégique initial (positionnement, packs, UX, éditorial, CRM). |
 | 2.0 | 2026-09-08 | Ajout : objectifs mesurables, RGPD/légal, architecture technique détaillée, plan de tests, déploiement, planning, matrice de risques, critères d'acceptation, SLA support. Clarification de la clause de délai 24–48h et des schémas de données. |
 | 2.1 | 2026-09-09 | Grille tarifaire « 3 offres » : Starter 390 €/39 €, Pro Connecté 690 €/59 €, nouveau Pack Ultime 990 €/199 € (tout-inclus). Options réajustées : Booster IA 140 €/49 €, Devis Express 70 €/15 €, Boutique Stripe 240 €/29 €, Gestion Ads 100 €/70 €. Règle calculateur : un pack tout-inclus verrouille ses options incluses (aucun supplément, total strict). |
+| 2.2 | 2026-09-11 | **Application effective de la décision 2.1 au corps du document** : la section 4.A portait encore l'ancienne grille (Starter 190 €/19 €, Pro 299 €/19 €, Booster IA en 4.A.3 à 49 €/20 €) et la section 4.B les anciennes options. §4.A et §4.B réécrites d'après `src/config/pricing.ts`, désormais désignée source de vérité unique et opposable. Ajout du Pack Ultime en 4.A.3 avec sa règle de verrouillage des options et son prix de comparaison (1 240 € + 222 €/mois) ; l'option Booster IA rejoint le tableau 4.B (références 4.A.3 des §2.4, §9 et §14 mises à jour). Retrait du cadeau « vidéo 3D immersive » du Pack Starter, supprimé des offres. Ajout de la clause de budget média (le budget Google/Meta n'est compris dans aucun tarif) et de la ligne « Déplacement au-delà de 15 km ». |
 
 ---
 

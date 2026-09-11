@@ -15,9 +15,11 @@
     "media": "node scripts/prepare-media.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "media:bg": "node scripts/make-hero-bg.mjs"
+    "media:bg": "node scripts/make-hero-bg.mjs",
+    "agent:prompt": "node scripts/build-agent-prompt.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.4.0",
     "astro": "^5.13.0",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
+    "@vercel/node": "^12.0.3",
     "ffmpeg-static": "^5.2.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.0",

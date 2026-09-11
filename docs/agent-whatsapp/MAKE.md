@@ -13,6 +13,47 @@ détient.
 
 ---
 
+## État au 11/09/2026
+
+Scénario **« Integration Webhooks »** (zone `eu1`, organisation 8934484, équipe
+2723946, scénario 7360472, webhook 3703656). Il contenait une maquette de tuyau —
+un texte figé envoyé à Claude, un autre texte figé renvoyé à WhatsApp, la réponse
+du modèle jamais utilisée. Il a été réécrit par l'API Make.
+
+**Étape 1 — en place et vérifiée dans le blueprint enregistré :**
+
+| Module | État |
+|---|---|
+| `[1]` Custom webhook | inchangé — l'URL déjà déclarée chez Meta reste valable |
+| `[2]` Webhook response | renvoie `{{1.hub.challenge}}` : vérification Meta **et** accusé rapide sur les POST |
+| `[5]` Anthropic → Create a Message | `claude-sonnet-5`, prompt système complet (27 816 caractères) + contexte temporel calculé à chaque exécution, message du prospect en entrée, filtre « seulement un message texte » |
+| `[6]` HTTP → Graph API | répond **à l'expéditeur réel**, bloc `FICHE_PROSPECT` retiré, texte échappé par `toJSON()`, plus un filtre de sécurité qui bloque l'envoi si le bloc survit |
+
+**Étape 2 — à monter, dans cet ordre d'importance :**
+
+1. **La mémoire** (§1, §5, §10). Sans elle l'agent oublie tout entre deux messages
+   et redemande le nom à chaque phrase : la qualification ne peut pas aboutir.
+   C'est le premier manque à combler.
+2. L'anti-doublon (§4).
+3. L'extraction de la fiche et l'écriture Notion (§11, §12) — aucune connexion
+   Notion n'existe encore côté Make.
+4. L'alerte équipe (§13).
+
+**Un point reste à confirmer par un vrai message entrant :** la sortie du module
+Anthropic de Make est supposée être `{{5.content[].text}}`, par analogie avec la
+réponse de l'API. Si le prospect reçoit un message vide, c'est ce mappage — et
+lui seul — qu'il faut corriger, dans le corps du module `[6]`.
+
+**Deux limites connues de ce montage :**
+
+- Le module natif Make n'expose pas `cache_control` : le prompt est refacturé en
+  entier à chaque message (≈ 0,02 € au lieu de ≈ 0,002 €). Pour récupérer le
+  cache il faudrait remplacer le module par un appel HTTP direct.
+- `thinking` est resté sur `disabled`, comme dans la maquette. À passer sur
+  `adaptive` si l'agent se montre approximatif sur les règles du prompt.
+
+---
+
 ## Vue d'ensemble
 
 ```

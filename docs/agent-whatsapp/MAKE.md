@@ -39,6 +39,32 @@ du modèle jamais utilisée. Il a été réécrit par l'API Make.
    Notion n'existe encore côté Make.
 4. L'alerte équipe (§13).
 
+### Diagnostic du 13/09/2026
+
+Une injection d'un faux webhook Meta directement sur l'URL du hook
+(`https://hook.eu1.make.com/slnx95qamd7vufa7lednfiw41imiwu9b`) a exécuté **4
+opérations** : webhook → réponse → Claude → HTTP. Le modèle répond donc bien avec
+le prompt complet ; seul le dernier module échoue. Deux causes, indépendantes :
+
+1. **Le jeton WhatsApp avait expiré** (le 11/09 à 06:00 PDT — c'était le jeton
+   temporaire de 24h). La Graph API répond `OAuthException 190`. Tant qu'il n'est
+   pas remplacé par le jeton permanent de l'étape 2 d'[`INSTALLATION.md`](./INSTALLATION.md),
+   l'agent lit et réfléchit mais ne peut rien envoyer.
+2. **Meta ne livre aucun webhook** : aucune exécution entre le 11/09 11:41 et
+   l'injection manuelle, alors que le hook Make est `enabled`, non `gone`, file
+   d'attente vide. À vérifier côté Meta — l'URL de rappel, et surtout
+   l'abonnement au champ `messages`, qui est une case à cocher **distincte** de
+   la vérification de l'URL. Vérifier l'URL n'abonne à rien.
+
+> ⚠️ **Ne pas rouvrir le mappage du module `[6]` dans l'interface Make.** Une
+> édition du 11/09 a enregistré les chemins sous leurs **étiquettes localisées**
+> — `{{1.Entrada[1].Cambios[1].value.messages[1].de}}` au lieu de
+> `{{1.entry[].changes[].value.messages[].from}}` — qui ne résolvent vers rien :
+> le destinataire partait vide. La même édition a remplacé l'expression du corps
+> par `{{5.content}}`, ce qui supprimait le retrait du bloc `FICHE_PROSPECT` :
+> les notes internes seraient parties chez le prospect. Corrigé le 13/09 par
+> l'API. En cas de doute, comparer avec le corps de référence du §9.
+
 **Un point reste à confirmer par un vrai message entrant :** la sortie du module
 Anthropic de Make est supposée être `{{5.content[].text}}`, par analogie avec la
 réponse de l'API. Si le prospect reçoit un message vide, c'est ce mappage — et

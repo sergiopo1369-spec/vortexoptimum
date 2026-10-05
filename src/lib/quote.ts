@@ -40,7 +40,7 @@ export function computeQuote(selection: QuoteSelection): QuoteResult {
   const pack = selection.pack ? PACKS.find((p) => p.id === selection.pack) : undefined;
   if (pack) lines.push(asLine(pack));
 
-  // Pack tout-inclus (Pack Ultime) : les options listées dans `includedAddons` sont
+  // Pack tout-inclus (Pack Avancé) : les options listées dans `includedAddons` sont
   // déjà comprises dans le prix du pack. Elles ne génèrent AUCUN supplément et sont
   // ignorées ici même si elles arrivent cochées. Seules les options « sur devis »
   // (ex. déplacement au-delà de 15 km) restent additionnables.
@@ -93,7 +93,7 @@ export function buildRecap(selection: QuoteSelection, name: string): string {
     ),
     ...(q.allInclusive
       ? [
-          `✓ Toutes les fonctionnalités et modules sont inclus dans le Pack Ultime : Booster IA, Devis Express OCR, Boutique Stripe, Gestion Ads. Seul le déplacement au-delà de 15 km peut faire l'objet d'un devis kilométrique.`,
+          `✓ Toutes les fonctionnalités et modules sont inclus dans le Pack Avancé : boutique e-commerce + paiement CB inclus. Seul le déplacement au-delà de 15 km peut faire l'objet d'un devis kilométrique.`,
         ]
       : []),
     ``,

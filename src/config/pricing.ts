@@ -46,77 +46,79 @@ export type Pack = PriceLine & {
 
 export const PACKS: Pack[] = [
   {
-    id: "starter",
-    label: "Pack Starter — Vitrine & Visibilité Locale",
-    setup: 390,
-    monthly: 39,
+    id: "essentiel",
+    label: "Pack Essentiel — Site Détaillé & Sécurisé",
+    setup: 600,
+    monthly: 29,
     description:
-      "Site vitrine responsive haute vitesse, nom de domaine (1 an) + hébergement SSL, SEO local Reims + Google Business Profile, formulaire sécurisé et boutons d'appel / WhatsApp / SMS.",
+      "Site web multi-pages détaillé, domaine .fr/.com, photos personnalisées de votre commerce ou artisanat, antivirus professionnel, sécurité renforcée, boutons WhatsApp/SMS et configuration complète de A à Z.",
     includes: [
-      "Site vitrine responsive mobile-first optimisé Core Web Vitals",
-      "Nom de domaine personnalisé (1 an) + hébergement sécurisé SSL haute disponibilité",
-      "SEO local : optimisation sémantique Reims + synchronisation Google Business Profile",
-      "Formulaire de contact sécurisé anti-spam, boutons appel / WhatsApp / SMS",
+      "Site web multi-pages détaillé et responsive (mobile-first)",
+      "Nom de domaine .fr/.com personnalisé (1 an)",
+      "Photos personnalisées de votre commerce ou artisanat",
+      "Antivirus professionnel + sécurité renforcée",
+      "Boutons WhatsApp, SMS et appel direct intégrés",
+      "Configuration complète de A à Z (sans rien à faire de votre côté)",
     ],
     freebies: [
       "Espace privé client sécurisé (valeur 49 €)",
       "Déplacement sur site inclus dans un rayon de 15 km",
     ],
     exclusions: [
-      "Rédaction de contenu long format",
-      "Prise de vue drone",
-      "Traduction multilingue",
+      "Blog de niche local",
+      "Photos en haute définition (HD)",
+      "Module interactif Devis + Photo",
     ],
   },
   {
     id: "pro",
-    label: "Pack Pro Connecté — Agenda & Réservations",
-    setup: 690,
-    monthly: 59,
+    label: "Pack Pro — Référencement & Haute Définition",
+    setup: 900,
+    monthly: 39,
     badge: "Le plus populaire",
     variant: "featured",
     description:
-      "Tout le Pack Starter, plus un module de prise de RDV connecté avec synchronisation bidirectionnelle de l'agenda et notifications automatiques de rappel.",
+      "Tout le Pack Essentiel, plus un site détaillé avancé, un blog de niche local pour Reims, des photos personnalisées en HD, un antivirus et pare-feu avancés, et une optimisation SEO complète pour votre positionnement Google.",
     includes: [
-      "Tout le contenu du Pack Starter",
-      "Module de prise de RDV / réservation connecté",
-      "Synchronisation bidirectionnelle en direct (Google Calendar, Apple iCal, Outlook)",
-      "Passerelle vers outils tiers (Planity, Treatwell…) ou solution native Cal.com",
-      "Notifications automatiques de confirmation et rappels (réduction des no-shows)",
+      "Tout le contenu du Pack Essentiel",
+      "Site web détaillé avancé (pages riches et optimisées)",
+      "Blog de niche locale (positionnement Reims & Grand Est)",
+      "Photos personnalisées en haute définition (HD)",
+      "Antivirus + pare-feu avancés",
+      "Optimisation SEO complète et positionnement sur Google",
     ],
     freebies: [
       "Espace privé client sécurisé (valeur 49 €)",
       "Déplacement sur site inclus dans un rayon de 15 km",
     ],
     exclusions: [
-      "Rédaction de contenu long format",
-      "Prise de vue drone",
-      "Traduction multilingue",
+      "Module interactif Devis + Photo",
+      "Boutique en ligne e-commerce",
     ],
   },
   {
-    id: "ultime",
-    label: "Pack Ultime — Tout-en-un & Automatisation IA",
-    setup: 990,
-    monthly: 199,
+    id: "avance",
+    label: "Pack Avancé — Ultra-Détaillé & Sécurité Maximale",
+    setup: 1300,
+    monthly: 49,
     badge: "Solution complète",
     variant: "ultimate",
     allInclusive: true,
-    includedAddons: ["ia", "devis-express", "boutique", "ads"],
-    compareSetup: 1240,
-    compareMonthly: 222,
+    includedAddons: ["boutique-ecommerce"],
+    compareSetup: 1490,
+    compareMonthly: 59,
     description:
-      "L'écosystème digital complet : tout le Pack Pro Connecté, un assistant IA disponible en continu, le devis express par photo, la boutique en ligne et la gestion publicitaire locale — déploiement et déplacement inclus.",
+      "L'offre la plus complète : tout le Pack Pro, un site ultra-détaillé, le module interactif « Devis + Photo », une sécurité maximale avec antivirus dédié et des sauvegardes automatiques quotidiennes — tout inclus, sans surprise.",
     includes: [
-      "Tout le Pack Pro Connecté",
-      "Assistant IA 24/7 sur WhatsApp et sur le site web",
-      "Module Devis Express avec scan photo (carte grise / pièces)",
-      "Boutique en ligne & paiement CB sécurisé (Stripe)",
-      "Gestion publicitaire locale (Google Ads & Meta Ads)",
+      "Tout le Pack Pro",
+      "Site web ultra-détaillé (contenu approfondi, pages riches)",
+      "Module interactif « Devis + Photo » intégré",
+      "Sécurité maximale + antivirus dédié",
+      "Sauvegardes automatiques quotidiennes",
       "Déplacement sur site inclus (Reims et 15 km)",
     ],
     freebies: [
-      "Audit & configuration de l'assistant IA offerts (valeur 190 €)",
+      "Option e-commerce offerte (valeur 190 €)",
       "Espace privé client sécurisé (valeur 49 €)",
     ],
     exclusions: [
@@ -129,9 +131,16 @@ export const PACKS: Pack[] = [
 
 /**
  * Options additionnelles cumulables (§4.A.3 + §4.B).
- * L'add-on IA est listé ici car il se configure comme une option au devis.
  */
 export const ADDONS: PriceLine[] = [
+  {
+    id: "boutique-ecommerce",
+    label: "Option Révolutionnaire : Boutique E-commerce + Paiement CB",
+    setup: 190,
+    monthly: 10,
+    description:
+      "Moteur boutique e-commerce avec paiement par carte bancaire sécurisé (Stripe). Ajoutez une boutique à n'importe quel pack. Inclut la gestion des flux bancaires, l'antivirus e-commerce et la sécurité Stripe/CB. Prix promotionnel.",
+  },
   {
     id: "ia",
     label: "Booster IA / Assistant 24/7",
@@ -139,22 +148,6 @@ export const ADDONS: PriceLine[] = [
     monthly: 49,
     description:
       "Agent conversationnel IA sur-mesure (WhatsApp et/ou widget web) : qualification des prospects, réponses aux questions fréquentes, disponibilités, 24h/24 7j/7. L'agent ne prend aucun engagement financier ferme et redirige vers un humain hors périmètre.",
-  },
-  {
-    id: "devis-express",
-    label: "Module Devis Express avec upload photo",
-    setup: 70,
-    monthly: 15,
-    description:
-      "Réception immédiate de photos (carte grise, panne, modèle) pour un devis rapide — garages, salons, artisans.",
-  },
-  {
-    id: "boutique",
-    label: "Boutique en ligne & paiement CB sécurisé",
-    setup: 240,
-    monthly: 29,
-    description:
-      "Stripe, Apple Pay, Google Pay, gestion des commandes, Click & Collect. Aucune donnée bancaire stockée en base propre (délégation intégrale à Stripe).",
   },
   {
     id: "ads",

@@ -125,7 +125,8 @@ const PARAMS = {
   recupTemps: 0.6,
   /** Garde-fou : la perte annoncée ne peut dépasser 15 % du CA estimé. */
   plafondPertePctCa: 0.15,
-  forfaitAn: 1398,
+  /** Pack Pro première année : 900 € installation + 39 × 12 = 1 368 €. */
+  forfaitAn: 1368,
 } as const;
 ---
 
@@ -295,15 +296,16 @@ const PARAMS = {
           <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Leviers activés</p>
           <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-300">
             <li class="flex gap-2">
-              <span class="text-cyan-400" aria-hidden="true">✓</span>Rappels WhatsApp/SMS automatiques avant chaque
-              rendez-vous.
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Site web multi-pages détaillé avec photos personnalisées HD.
             </li>
             <li class="flex gap-2">
-              <span class="text-cyan-400" aria-hidden="true">✓</span>Relances de devis programmées, sans intervention
-              humaine.
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Boutons WhatsApp/SMS intégrés + rappels automatiques.
             </li>
             <li class="flex gap-2">
-              <span class="text-cyan-400" aria-hidden="true">✓</span>Prise de rendez-vous et qualification 24/7.
+              <span class="text-cyan-400" aria-hidden="true">✓</span>SEO local Reims + blog de niche pour attirer de nouveaux clients.
+            </li>
+            <li class="flex gap-2">
+              <span class="text-cyan-400" aria-hidden="true">✓</span>Antivirus professionnel + sécurité renforcée inclus.
             </li>
           </ul>
         </article>
@@ -359,7 +361,7 @@ const PARAMS = {
         </a>
         <button id="roi-restart" type="button" class="btn btn-ghost text-xs">Recommencer l'audit</button>
         <p class="max-w-md text-center text-xs text-slate-400">
-          Le devis est pré-rempli avec le pack Pro Connecté (1&nbsp;398&nbsp;€ la première année), ajustable en un
+          Le devis est pré-rempli avec le Pack Pro (1&nbsp;368&nbsp;€ la première année), ajustable en un
           clic. Sans engagement.
         </p>
       </div>
@@ -740,8 +742,8 @@ const PARAMS = {
    *   perte_ca      = round(perte_brute × facteur)
    *   cout_temps    = heures_sem × 46 × 55                        ← affiché séparément
    *   gain_ca       = round((0,70×p_ns + 0,55×p_dev + 0,65×p_ct) × facteur)
-   *   gain_net      = gain_ca − 1 398
-   *   roi           = gain_ca / 1 398                             ← libre, jamais borné
+   *   gain_net      = gain_ca − 1 368   (Pack Pro 1re année)
+   *   roi           = gain_ca / 1 368                             ← libre, jamais borné
    */
   const raw = document.getElementById("roi-config")?.textContent;
   const wizard = document.getElementById("roi-wizard");
